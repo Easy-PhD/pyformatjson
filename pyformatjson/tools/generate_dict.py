@@ -7,6 +7,21 @@ from typing import Optional
 
 
 def conference_journal_header():
+    """Generate markdown table headers for conferences and journals.
+
+    This function creates the appropriate markdown table headers for displaying
+    conference and journal information in tabular format.
+
+    Returns:
+        tuple: A tuple containing two lists:
+            - conference_header: Markdown table headers for conferences
+            - journal_header: Markdown table headers for journals
+
+    Example:
+        >>> conf_header, journal_header = conference_journal_header()
+        >>> print(conf_header[0])
+        |Publishers|Full/Homepage|Abbr/About|Acronym/Archive|Period/DBLP|...
+    """
     o = "|Publishers|Full/Homepage|Abbr/About|"
     t = "|-         |-            |-         |"
     conference_header = [
@@ -21,6 +36,29 @@ def conference_journal_header():
 
 
 class GenerateDataDict(object):
+    """Generate data dictionaries from JSON input for conferences and journals.
+
+    This class processes JSON data containing conference or journal information
+    and generates structured dictionaries for markdown table generation, including
+    publisher metadata, keyword-based indexing, and Mermaid diagram data.
+
+    Attributes:
+        cj (str): Type of publication ('conferences' or 'journals').
+        ia (str): Publication type ('inproceedings' or 'article').
+        json_dict (dict): Input JSON data containing publication information.
+        path_spidered_cj (Optional[str]): Path to spidered conference/journal data.
+        for_vue (bool): Whether to generate Vue.js-compatible format.
+
+    Example:
+        >>> generator = GenerateDataDict(
+        ...     conferences_or_journals="conferences",
+        ...     inproceedings_or_article="inproceedings",
+        ...     json_dict=publication_data,
+        ...     for_vue=True
+        ... )
+        >>> publisher_meta, publisher_abbr, keyword_abbr = generator.generate()
+    """
+
     def __init__(
         self,
         conferences_or_journals: str,
@@ -29,6 +67,17 @@ class GenerateDataDict(object):
         for_vue: bool = True,
         path_spidered_conferences_or_journals: Optional[str] = None,
     ) -> None:
+        """Initialize the GenerateDataDict instance.
+
+        Args:
+            conferences_or_journals (str): Type of publication ('conferences' or 'journals').
+            inproceedings_or_article (str): Publication type ('inproceedings' or 'article').
+            json_dict (dict): Input JSON data containing publication information.
+            for_vue (bool, optional): Whether to generate Vue.js-compatible format.
+                Defaults to True.
+            path_spidered_conferences_or_journals (Optional[str], optional): Path to
+                spidered conference/journal data. Defaults to None.
+        """
         self.cj = conferences_or_journals
         self.ia = inproceedings_or_article
         self.json_dict = json_dict
@@ -37,13 +86,22 @@ class GenerateDataDict(object):
         self.for_vue = for_vue
 
     def generate(self):
-        """
-        Generate publisher metadata and keyword-based publication information.
+        """Generate publisher metadata and keyword-based publication information.
+
+        This method processes the JSON data to create three main dictionaries:
+        1. Publisher metadata with URLs and descriptions
+        2. Publisher abbreviation metadata with detailed publication info
+        3. Keyword-based metadata for easy searching and categorization
 
         Returns:
-            tuple: Contains two dictionaries:
-                - publisher_meta_abbr_dict: Publisher metadata and abbreviations
-                - publication_keyword_row_info_dict: Keyword-indexed publication info
+            tuple: A tuple containing three dictionaries:
+                - publisher_meta_dict: Publisher metadata including URLs and descriptions
+                - publisher_abbr_meta_dict: Publication details indexed by publisher and abbreviation
+                - keyword_abbr_meta_dict: Publication details indexed by keywords
+
+        Example:
+            >>> generator = GenerateDataDict(...)
+            >>> pub_meta, pub_abbr, keyword_abbr = generator.generate()
         """
         publisher_meta_dict, keyword_abbr_meta_dict, publisher_abbr_meta_dict = {}, {}, {}
 
@@ -76,13 +134,15 @@ class GenerateDataDict(object):
             remarks = [p for p in self.json_dict[publisher].get("txt_remarks", []) if p.strip()]
 
             # Update publisher metadata
-            publisher_meta_dict.setdefault(publisher, {}).update({
-                "full_name_url": full_url,
-                "txt_abouts": abouts,
-                "txt_remarks": remarks,
-                "urls_about": urls_about,
-                "url_conferences_or_journals": f"[{self.cj.title()}]({urls_cj[0]})" if urls_cj else "",
-            })
+            publisher_meta_dict.setdefault(publisher, {}).update(
+                {
+                    "full_name_url": full_url,
+                    "txt_abouts": abouts,
+                    "txt_remarks": remarks,
+                    "urls_about": urls_about,
+                    "url_conferences_or_journals": f"[{self.cj.title()}]({urls_cj[0]})" if urls_cj else "",
+                }
+            )
 
             # Process each abbreviation (conference/journal)
             for abbr in self.json_dict[publisher][self.cj]:
@@ -105,17 +165,31 @@ class GenerateDataDict(object):
         return publisher_meta_dict, publisher_abbr_meta_dict, keyword_abbr_meta_dict
 
     def conference_or_journal(self, publisher_url: str, abbr: str, abbr_dict: dict):
-        """
-        Process conference or journal data and generate formatted information.
+        """Process conference or journal data and generate formatted information.
+
+        This method processes individual conference or journal data, validates
+        name lengths, extracts information, formats URLs, and generates table
+        row data for markdown output.
 
         Args:
-            publisher_url: Publisher's URL
-            abbr: Abbreviation identifier
-            abbr_dict: Dictionary containing publication details
+            publisher_url (str): Publisher's URL for markdown linking.
+            abbr (str): Abbreviation identifier for the publication.
+            abbr_dict (dict): Dictionary containing publication details including
+                names, URLs, dates, scores, and keywords.
 
         Returns:
-            dict: Contains formatted about text, remarks, and table row
-            list: Sorted list of keywords
+            tuple: A tuple containing:
+                - dict: Contains formatted about text, remarks, and table row data
+                - list: Sorted list of keywords for the publication
+
+        Raises:
+            ValueError: If full and abbreviated names have mismatched lengths.
+
+        Example:
+            >>> result = generator.conference_or_journal(
+            ...     "https://publisher.com", "ICML", conf_data
+            ... )
+            >>> abouts, keywords = result
         """
         # Validate full and abbreviated names match in length
         self._validate_name_lengths(abbr_dict)
@@ -138,23 +212,42 @@ class GenerateDataDict(object):
 
         # Generate appropriate table row based on type
         row_inf = self._generate_table_row(
-            publisher_url, full_name, abbr_name, url_home,
-            url_about, period, top, keywords_url, abbr, abbr_dict
+            publisher_url, full_name, abbr_name, url_home, url_about, period, top, keywords_url, abbr, abbr_dict
         )
 
         return {"txt_abouts": abouts, "txt_remarks": remarks, "row_inf": row_inf}, keywords
 
     def _validate_name_lengths(self, abbr_dict: dict):
-        """Validate that full and abbreviated names arrays have equal length."""
+        """Validate that full and abbreviated names arrays have equal length.
+
+        This method ensures that the full names and abbreviated names arrays
+        have the same length, which is required for proper data processing.
+
+        Args:
+            abbr_dict (dict): Dictionary containing publication data.
+
+        Raises:
+            ValueError: If the lengths of names_full and names_abbr don't match.
+        """
         full_names = abbr_dict.get("names_full", [])
         abbr_names = abbr_dict.get("names_abbr", [])
         if len(full_names) != len(abbr_names):
-            raise ValueError(f"Length mismatch: {len(full_names)} full names vs {len(abbr_names)} abbreviated names")
+            raise ValueError(f"Length mismatch: {len(full_names)} {full_names} vs {len(abbr_names)} abbreviated names")
 
     def _extract_full_abbr_names(self, abbr_dict: dict):
-        """Extract full and abbreviated names from dictionary."""
+        """Extract full and abbreviated names from dictionary.
+
+        This method extracts the appropriate full and abbreviated names based on
+        the publication type (conferences vs journals).
+
+        Args:
+            abbr_dict (dict): Dictionary containing publication data.
+
+        Returns:
+            tuple: A tuple containing (full_name, abbr_name).
+        """
         # For journals: use first full name from list; for conferences: use single name
-        full_name = (abbr_dict.get("names_full", [""])[0] if self.cj == "journals" else abbr_dict.get("name", ""))
+        full_name = abbr_dict.get("names_full", [""])[0] if self.cj == "journals" else abbr_dict.get("name", "")
         abbr_name = abbr_dict.get("names_abbr", [""])[0]
         return full_name, abbr_name
 
@@ -175,7 +268,7 @@ class GenerateDataDict(object):
         if acronym_dblp := abbr_dict.get("acronym_dblp", ""):
             journal_conf = "journals" if self.cj == "journals" else "conf"
             dblp_url = f"https://dblp.org/db/{journal_conf}/{acronym_dblp}/index.html"
-            period = f'[{period}]({dblp_url})'
+            period = f"[{period}]({dblp_url})"
 
         return period
 
@@ -209,9 +302,7 @@ class GenerateDataDict(object):
         all_keywords = sorted(set(all_keywords))
         # Create Google search links for each keyword
         google_base = "https://www.google.com/search?q="
-        keywords_url = [
-            f"[{keyword}]({google_base}" + re.sub(r"\s+", "+", keyword) + ")" for keyword in all_keywords
-        ]
+        keywords_url = [f"[{keyword}]({google_base}" + re.sub(r"\s+", "+", keyword) + ")" for keyword in all_keywords]
 
         # For category
         # Flatten keywords and remove duplicates
@@ -276,19 +367,28 @@ class GenerateDataDict(object):
         abstract_due, start_date, today = self._process_conference_dates(abbr_dict)
 
         # Format date indicators for Vue or standard display
-        abstract_indicator, start_indicator = self._format_date_indicators(
-            abstract_due, start_date, today
-        )
+        abstract_indicator, start_indicator = self._format_date_indicators(abstract_due, start_date, today)
 
         # Get year URL for start date link
         year_url = abbr_dict.get("conf_url", "")
 
         # Build and return markdown table row
         return self._build_conference_row(
-            publisher_url, full_name, abbr_name, url_home, url_about,
-            archive_display, period, top, abbr_dict, abstract_due,
-            abstract_indicator, start_date, start_indicator, year_url,
-            keywords
+            publisher_url,
+            full_name,
+            abbr_name,
+            url_home,
+            url_about,
+            archive_display,
+            period,
+            top,
+            abbr_dict,
+            abstract_due,
+            abstract_indicator,
+            start_date,
+            start_indicator,
+            year_url,
+            keywords,
         )
 
     def _process_conference_dates(self, abbr_dict):
@@ -328,8 +428,22 @@ class GenerateDataDict(object):
         return abstract_indicator, start_indicator
 
     def _build_conference_row(
-        self, publisher_url, full_name, abbr_name, url_home, url_about, archive_display, period, top, abbr_dict,
-        abstract_due, abstract_indicator, start_date, start_indicator, year_url, keywords
+        self,
+        publisher_url,
+        full_name,
+        abbr_name,
+        url_home,
+        url_about,
+        archive_display,
+        period,
+        top,
+        abbr_dict,
+        abstract_due,
+        abstract_indicator,
+        start_date,
+        start_indicator,
+        year_url,
+        keywords,
     ):
         """Construct conference table row string."""
         # Format date strings
@@ -340,19 +454,21 @@ class GenerateDataDict(object):
         start_date_display = self._format_link(start_date_str, year_url) if start_date_str else ""
 
         # Build table row
-        return f"|{publisher_url}|" \
-               f"{self._format_link(full_name, url_home)}|" \
-               f"{self._format_link(abbr_name, url_about)}|" \
-               f"{archive_display}|" \
-               f"{period}|" \
-               f"{top}|" \
-               f"{abbr_dict.get('score_ccf', '')}|" \
-               f"{abstract_date_str}|" \
-               f"{abstract_indicator}|" \
-               f"{start_date_display}|" \
-               f"{start_indicator}|" \
-               f"{abbr_dict.get('conf_location', '').strip()}|" \
-               f"{'; '.join(keywords)}|"
+        return (
+            f"|{publisher_url}|"
+            f"{self._format_link(full_name, url_home)}|"
+            f"{self._format_link(abbr_name, url_about)}|"
+            f"{archive_display}|"
+            f"{period}|"
+            f"{top}|"
+            f"{abbr_dict.get('score_ccf', '')}|"
+            f"{abstract_date_str}|"
+            f"{abstract_indicator}|"
+            f"{start_date_display}|"
+            f"{start_indicator}|"
+            f"{abbr_dict.get('conf_location', '').strip()}|"
+            f"{'; '.join(keywords)}|"
+        )
 
     # Journals
     def _generate_for_journal(
@@ -382,25 +498,26 @@ class GenerateDataDict(object):
 
         # Build and return markdown table row
         return self._build_journal_row(
-            publisher_url, full_name, abbr_name, url_home, url_about,
-            issues_display, period, top, abbr_dict, keywords
+            publisher_url, full_name, abbr_name, url_home, url_about, issues_display, period, top, abbr_dict, keywords
         )
 
     def _build_journal_row(
         self, publisher_url, full_name, abbr_name, url_home, url_about, issues_display, period, top, abbr_dict, keywords
     ):
         """Construct journal table row string."""
-        return f"|{publisher_url}|" \
-               f"{self._format_link(full_name, url_home)}|" \
-               f"{self._format_link(abbr_name, url_about)}|" \
-               f"{issues_display}|" \
-               f"{period}|" \
-               f"{top}|" \
-               f"{abbr_dict.get('score_ccf', '')}|" \
-               f"{abbr_dict.get('score_cas', '')}|" \
-               f"{abbr_dict.get('score_jcr', '')}|" \
-               f"{abbr_dict.get('score_if', '')}|" \
-               f"{'; '.join(keywords)}|"
+        return (
+            f"|{publisher_url}|"
+            f"{self._format_link(full_name, url_home)}|"
+            f"{self._format_link(abbr_name, url_about)}|"
+            f"{issues_display}|"
+            f"{period}|"
+            f"{top}|"
+            f"{abbr_dict.get('score_ccf', '')}|"
+            f"{abbr_dict.get('score_cas', '')}|"
+            f"{abbr_dict.get('score_jcr', '')}|"
+            f"{abbr_dict.get('score_if', '')}|"
+            f"{'; '.join(keywords)}|"
+        )
 
     # Mermaid data
     def generate_mermaid_data(self, publisher: str, abbr: str, inproceedings_or_article: str):
@@ -413,7 +530,7 @@ class GenerateDataDict(object):
         mermaid, data_dict = [], {}
         # |AAAI|1980|95|Proceedings of the First National Conference on Artificial Intelligence|
         regex = re.compile(r"\|.*\|([0-9]+)\|([0-9]+)\|.*\|")
-        with open(full_readme, "r") as file:
+        with open(full_readme, "r", encoding="utf-8") as file:
             data_list = file.readlines()
         for line in data_list:
             if mch := regex.search(line):
@@ -425,15 +542,15 @@ class GenerateDataDict(object):
             mermaid = ["```mermaid\n"]
             mermaid.extend(
                 [
-                    '---\n',
-                    'config:\n',
-                    '    xyChart:\n',
-                    '        width: 1200\n',
-                    '        height: 600\n',
-                    '    themeVariables:\n',
-                    '        xyChart:\n',
+                    "---\n",
+                    "config:\n",
+                    "    xyChart:\n",
+                    "        width: 1200\n",
+                    "        height: 600\n",
+                    "    themeVariables:\n",
+                    "        xyChart:\n",
                     '            titleColor: "#ff0000"\n',
-                    '---\n'
+                    "---\n",
                 ]
             )
             mermaid.extend(["xychart-beta\n", f'    title "{abbr}"\n'])

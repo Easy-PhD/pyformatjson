@@ -8,7 +8,24 @@ from ._base import split_data_list, split_text_by_length
 
 
 def load_json_data(path_json: str, filename: str) -> Dict:
-    """Load JSON data from file."""
+    """Load JSON data from a specified file.
+
+    This function attempts to load JSON data from a file located in the specified
+    directory. If the file doesn't exist or there's an error loading it, an empty
+    dictionary is returned.
+
+    Args:
+        path_json (str): Directory path containing the JSON file.
+        filename (str): Name of the JSON file (without .json extension).
+
+    Returns:
+        Dict: The loaded JSON data as a dictionary, or empty dict if file not found
+            or error occurs.
+
+    Example:
+        >>> load_json_data("/data", "conferences")
+        {"publisher1": {"conferences": {...}}}
+    """
     try:
         file_path = os.path.join(path_json, f"{filename}.json")
         if not os.path.exists(file_path):
@@ -23,15 +40,25 @@ def load_json_data(path_json: str, filename: str) -> Dict:
 
 
 def update_json_file(path_root: str, conferences_or_journals: str) -> Dict[str, Any]:
-    """
-    Update and format JSON file containing conference/journal data.
+    """Update and format JSON file containing conference/journal data.
+
+    This function loads JSON data, processes and formats text fields by splitting
+    long text into appropriate lengths, checks for duplicate abbreviations, and
+    saves the updated data back to the file.
 
     Args:
-        path_root (str): Root directory path
-        conferences_or_journals (str): Type of publication ('conferences' or 'journals')
+        path_root (str): Root directory path containing the JSON file.
+        conferences_or_journals (str): Type of publication ('conferences' or 'journals').
 
     Returns:
-        Dict[str, Any]: Processed JSON data
+        Dict[str, Any]: Processed JSON data dictionary.
+
+    Raises:
+        ValueError: If duplicate abbreviations are found in the data.
+
+    Example:
+        >>> update_json_file("/data", "conferences")
+        {"publisher1": {"conferences": {"conf1": {...}}}}
     """
     # Load Json Data
     json_dict = load_json_data(path_root, conferences_or_journals)
@@ -68,15 +95,21 @@ def update_json_file(path_root: str, conferences_or_journals: str) -> Dict[str, 
 
 
 def _check_duplicate_abbr(json_dict: Dict[str, Any], conferences_or_journals: str) -> None:
-    """
-    Check for duplicate abbreviations in the data.
+    """Check for duplicate abbreviations in the data.
+
+    This function validates that there are no duplicate abbreviations within
+    the same publication type across all publishers.
 
     Args:
-        json_dict: JSON data dictionary
-        conferences_or_journals (str): Type of publication ('conferences' or 'journals')
+        json_dict (Dict[str, Any]): JSON data dictionary containing publication information.
+        conferences_or_journals (str): Type of publication ('conferences' or 'journals').
 
     Raises:
-        ValueError: If duplicate abbreviations are found
+        ValueError: If duplicate abbreviations are found in the data.
+
+    Example:
+        >>> _check_duplicate_abbr(data, "conferences")
+        # Raises ValueError if "ICML" appears twice in conferences
     """
     abbr_list = []
 

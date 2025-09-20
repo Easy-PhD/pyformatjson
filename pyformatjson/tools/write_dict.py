@@ -8,16 +8,55 @@ from .generate_dict import conference_journal_header
 
 
 def conference_journal_informations():
+    """Generate informational content for conferences and journals.
+
+    This function provides additional informational content that can be
+    included in markdown documentation for conferences and journals.
+
+    Returns:
+        tuple: A tuple containing two lists:
+            - conference_inf: List of informational strings for conferences
+            - journal_inf: List of informational strings for journals
+
+    Example:
+        >>> conf_info, journal_info = conference_journal_informations()
+        >>> print(conf_info[0])
+        !> [List of Upcoming International Conferences](...)
+    """
     conference_inf = [
         "!> [List of Upcoming International Conferences](https://internationalconferencealerts.com/all-events.php)\n\n",
-        "!> [Conferences in Theoretical Computer Science](https://www.lix.polytechnique.fr/~hermann/conf.php)\n\n"
+        "!> [Conferences in Theoretical Computer Science](https://www.lix.polytechnique.fr/~hermann/conf.php)\n\n",
     ]
     journal_inf = []
     return conference_inf, journal_inf
 
 
 class WriteDataToMd(object):
-    """Class to write publication data to Markdown files."""
+    """Class to write publication data to Markdown files.
+
+    This class provides methods to generate various markdown documentation files
+    from processed publication data, including introduction files, categorized
+    listings, publisher information, and statistics.
+
+    Attributes:
+        cj (str): Type of publication ('conferences' or 'journals').
+        ia (str): Publication type ('inproceedings' or 'article').
+        publisher_meta_dict (dict): Publisher metadata dictionary.
+        publisher_abbr_meta_dict (dict): Publisher abbreviation metadata dictionary.
+        keyword_abbr_meta_dict (dict): Keyword-based metadata dictionary.
+        path_output (str): Output directory path for generated files.
+
+    Example:
+        >>> writer = WriteDataToMd(
+        ...     conferences_or_journals="conferences",
+        ...     inproceedings_or_article="inproceedings",
+        ...     publisher_meta_dict=pub_meta,
+        ...     publisher_abbr_meta_dict=pub_abbr,
+        ...     keyword_abbr_meta_dict=keyword_abbr,
+        ...     path_output="/output"
+        ... )
+        >>> writer.save_introductions()
+    """
 
     def __init__(
         self,
@@ -28,7 +67,16 @@ class WriteDataToMd(object):
         keyword_abbr_meta_dict: dict,
         path_output: str,
     ) -> None:
-        """Initialize with publication data and output path."""
+        """Initialize with publication data and output path.
+
+        Args:
+            conferences_or_journals (str): Type of publication ('conferences' or 'journals').
+            inproceedings_or_article (str): Publication type ('inproceedings' or 'article').
+            publisher_meta_dict (dict): Publisher metadata dictionary.
+            publisher_abbr_meta_dict (dict): Publisher abbreviation metadata dictionary.
+            keyword_abbr_meta_dict (dict): Keyword-based metadata dictionary.
+            path_output (str): Output directory path for generated files.
+        """
         self.cj = conferences_or_journals  # "conferences" or "journals"
         self.ia = inproceedings_or_article  # "inproceedings" or "article"
         self.publisher_meta_dict = publisher_meta_dict
@@ -41,7 +89,18 @@ class WriteDataToMd(object):
         ]
 
     def save_introductions(self) -> None:
-        """Save introduction file with all conferences/journals list."""
+        """Save introduction file with all conferences/journals list.
+
+        This method generates a comprehensive markdown file containing all
+        conferences or journals in a tabular format with appropriate headers
+        and informational content.
+
+        Returns:
+            None: This method does not return a value.
+
+        Note:
+            The output file is saved as 'Introductions_{type}.md' in the output directory.
+        """
         conference_header, journal_header = conference_journal_header()
         conference_inf, journal_inf = conference_journal_informations()
 
@@ -62,13 +121,13 @@ class WriteDataToMd(object):
         idx = 1
         for publisher in self.publisher_abbr_meta_dict:
             for abbr in self.publisher_abbr_meta_dict[publisher]:
-                row_info = self.publisher_abbr_meta_dict[publisher][abbr]['row_inf']
+                row_info = self.publisher_abbr_meta_dict[publisher][abbr]["row_inf"]
                 data_list.append(f"|{idx}{row_info}\n")
                 idx += 1
 
         # Write to file
         output_file = os.path.join(self.path_output, f"Introductions_{self.cj.title()}.md")
-        with open(output_file, "w") as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             f.writelines(data_list)
 
     # --------- --------- --------- --------- --------- --------- --------- --------- --------- #
@@ -88,7 +147,21 @@ class WriteDataToMd(object):
 
     # --------- --------- --------- --------- --------- --------- --------- --------- --------- #
     def save_categories(self, keywords_category_name: str, keywords_list: List[str]) -> None:
-        """Save publications categorized by keywords."""
+        """Save publications categorized by keywords.
+
+        This method generates markdown files organizing publications by their
+        keywords, creating separate sections for each keyword category.
+
+        Args:
+            keywords_category_name (str): The category name for keywords filtering.
+            keywords_list (List[str]): List of keywords to include in the output.
+
+        Returns:
+            None: This method does not return a value.
+
+        Note:
+            The output file is saved as 'Categories_{type}_{category}.md' in the output directory.
+        """
         conference_header, journal_header = conference_journal_header()
         data_list = [f"# {self.cj.title()}\n\n"]
         data_list.extend(self._default_inf)
@@ -110,7 +183,7 @@ class WriteDataToMd(object):
 
         # Write to file
         category_postfix = f"_{keywords_category_name.title()}" if keywords_category_name else ""
-        with open(os.path.join(self.path_output, f"Categories_{self.cj.title()}{category_postfix}.md"), "w") as f:
+        with open(os.path.join(self.path_output, f"Categories_{self.cj.title()}{category_postfix}.md"), "w", encoding="utf-8") as f:
             f.writelines(data_list)
 
         return None
@@ -136,18 +209,31 @@ class WriteDataToMd(object):
 
             # Write keyword-specific file
             path_key = standardize_path(os.path.join(self.path_output, f"Categories_{self.cj.title()}"))
-            with open(os.path.join(path_key, f"{keyword.replace(' ', '_')}.md"), "w") as f:
+            # Create safe filename by replacing invalid characters
+            safe_keyword = "".join(c if c.isalnum() or c in '-_' else '_' for c in keyword)
+            with open(os.path.join(path_key, f"{safe_keyword}.md"), "w", encoding="utf-8") as f:
                 f.writelines(data_list)
 
         return None
 
     # --------- --------- --------- --------- --------- --------- --------- --------- --------- #
     def save_publishers(self) -> None:
-        """Save publisher overview file with basic information."""
+        """Save publisher overview file with basic information.
+
+        This method generates a markdown file containing an overview of all
+        publishers with their basic information, about pages, and links to
+        detailed publisher-specific files.
+
+        Returns:
+            None: This method does not return a value.
+
+        Note:
+            The output file is saved as 'Publishers_{type}.md' in the output directory.
+        """
         data_list_pub = [
             f"# Introductions of Publishers and {self.cj.title()}\n\n",
             "| |Publishers|About US|Conferences/Journals|Separate Links|\n",
-            "|-|-         |-       |-                   |-             |\n"
+            "|-|-         |-       |-                   |-             |\n",
         ]
         idx = 1
 
@@ -171,7 +257,7 @@ class WriteDataToMd(object):
             idx += 1
 
         # Write to file
-        with open(os.path.join(self.path_output, f"Publishers_{self.cj.title()}.md"), "w") as f:
+        with open(os.path.join(self.path_output, f"Publishers_{self.cj.title()}.md"), "w", encoding="utf-8") as f:
             f.writelines(data_list_pub)
         return None
 
@@ -205,7 +291,7 @@ class WriteDataToMd(object):
 
                 # Add row information
                 row_info = self.publisher_abbr_meta_dict[pub][abbr]["row_inf"]
-                data_list.append(f'{row_info}\n\n')
+                data_list.append(f"{row_info}\n\n")
 
                 # Add remarks and about for this abbreviation
                 for flag in ["txt_remarks", "txt_abouts"]:
@@ -222,7 +308,7 @@ class WriteDataToMd(object):
 
             # Write publisher-specific file
             path_pub = standardize_path(os.path.join(self.path_output, f"Publishers_{self.cj.title()}"))
-            with open(os.path.join(path_pub, f"{pub}.md"), "w") as f:
+            with open(os.path.join(path_pub, f"{pub}.md"), "w", encoding="utf-8") as f:
                 f.writelines(data_list)
 
         return None
@@ -232,13 +318,15 @@ class WriteDataToMd(object):
         data_list = [
             f"# Statistics of keywords in {self.cj.title()}\n\n",
             "| |keywords|Separate Links|\n",
-            "|-|-      |-             |\n"
+            "|-|-      |-             |\n",
         ]
         idx = 1
 
         # Add publications for each category
         for keyword in self._default_or_customized_keywords(keywords_category_name, keywords_list):
-            local_url = f"[Link](data/{self.cj.title()}/Statistics_{self.cj.title()}/{keyword.replace(' ', '_')}.md)"
+            # Create safe filename for URL
+            safe_keyword = "".join(c if c.isalnum() or c in '-_' else '_' for c in keyword)
+            local_url = f"[Link](data/{self.cj.title()}/Statistics_{self.cj.title()}/{safe_keyword}.md)"
 
             # Create table row
             row = f"| {idx} | {keyword} | {local_url} |\n"
@@ -247,7 +335,7 @@ class WriteDataToMd(object):
 
         # Write to file
         category_postfix = f"_{keywords_category_name.title()}" if keywords_category_name else ""
-        with open(os.path.join(self.path_output, f"Statistics_{self.cj.title()}{category_postfix}.md"), "w") as f:
+        with open(os.path.join(self.path_output, f"Statistics_{self.cj.title()}{category_postfix}.md"), "w", encoding="utf-8") as f:
             f.writelines(data_list)
         return None
 
@@ -269,7 +357,7 @@ class WriteDataToMd(object):
 
                 # Add row information
                 row_info = self.keyword_abbr_meta_dict[keyword][abbr]["row_inf"]
-                data_list.append(f'{row_info}\n\n')
+                data_list.append(f"{row_info}\n\n")
 
                 # Add statistics if available
                 if statistics := self.keyword_abbr_meta_dict[keyword][abbr].get("statistics", []):
@@ -278,7 +366,9 @@ class WriteDataToMd(object):
 
             # Write publisher-specific file
             path_pub = standardize_path(os.path.join(self.path_output, f"Statistics_{self.cj.title()}"))
-            with open(os.path.join(path_pub, f"{keyword.replace(' ', '_')}.md"), "w") as f:
+            # Create safe filename by replacing invalid characters
+            safe_keyword = "".join(c if c.isalnum() or c in '-_' else '_' for c in keyword)
+            with open(os.path.join(path_pub, f"{safe_keyword}.md"), "w", encoding="utf-8") as f:
                 f.writelines(data_list)
 
         return None
