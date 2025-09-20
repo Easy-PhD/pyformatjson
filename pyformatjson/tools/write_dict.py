@@ -183,7 +183,9 @@ class WriteDataToMd(object):
 
         # Write to file
         category_postfix = f"_{keywords_category_name.title()}" if keywords_category_name else ""
-        with open(os.path.join(self.path_output, f"Categories_{self.cj.title()}{category_postfix}.md"), "w", encoding="utf-8") as f:
+        with open(
+            os.path.join(self.path_output, f"Categories_{self.cj.title()}{category_postfix}.md"), "w", encoding="utf-8"
+        ) as f:
             f.writelines(data_list)
 
         return None
@@ -210,7 +212,7 @@ class WriteDataToMd(object):
             # Write keyword-specific file
             path_key = standardize_path(os.path.join(self.path_output, f"Categories_{self.cj.title()}"))
             # Create safe filename by replacing invalid characters
-            safe_keyword = "".join(c if c.isalnum() or c in '-_' else '_' for c in keyword)
+            safe_keyword = "".join(c if c.isalnum() or c in "-_" else "_" for c in keyword)
             with open(os.path.join(path_key, f"{safe_keyword}.md"), "w", encoding="utf-8") as f:
                 f.writelines(data_list)
 
@@ -325,7 +327,7 @@ class WriteDataToMd(object):
         # Add publications for each category
         for keyword in self._default_or_customized_keywords(keywords_category_name, keywords_list):
             # Create safe filename for URL
-            safe_keyword = "".join(c if c.isalnum() or c in '-_' else '_' for c in keyword)
+            safe_keyword = "".join(c if c.isalnum() or c in "-_" else "_" for c in keyword)
             local_url = f"[Link](data/{self.cj.title()}/Statistics_{self.cj.title()}/{safe_keyword}.md)"
 
             # Create table row
@@ -335,7 +337,9 @@ class WriteDataToMd(object):
 
         # Write to file
         category_postfix = f"_{keywords_category_name.title()}" if keywords_category_name else ""
-        with open(os.path.join(self.path_output, f"Statistics_{self.cj.title()}{category_postfix}.md"), "w", encoding="utf-8") as f:
+        with open(
+            os.path.join(self.path_output, f"Statistics_{self.cj.title()}{category_postfix}.md"), "w", encoding="utf-8"
+        ) as f:
             f.writelines(data_list)
         return None
 
@@ -367,7 +371,7 @@ class WriteDataToMd(object):
             # Write publisher-specific file
             path_pub = standardize_path(os.path.join(self.path_output, f"Statistics_{self.cj.title()}"))
             # Create safe filename by replacing invalid characters
-            safe_keyword = "".join(c if c.isalnum() or c in '-_' else '_' for c in keyword)
+            safe_keyword = "".join(c if c.isalnum() or c in "-_" else "_" for c in keyword)
             with open(os.path.join(path_pub, f"{safe_keyword}.md"), "w", encoding="utf-8") as f:
                 f.writelines(data_list)
 
