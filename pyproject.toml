@@ -9,7 +9,7 @@ readme = ["README.md"]
 homepage = "https://github.com/NextArtifIntell/pyformatjson"
 repository = "https://github.com/NextArtifIntell/pyformatjson"
 documentation = "https://github.com/NextArtifIntell/pyformatjson"
-keywords = ["Python", "json"]
+keywords = ["Python", "Json"]
 classifiers = ["Topic :: Software Development :: Libraries :: Python Modules"]
 
 [tool.poetry.dependencies]
