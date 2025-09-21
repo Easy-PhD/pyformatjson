@@ -16,7 +16,7 @@ def load_json_data(path_json: str, filename: str) -> Dict:
 
     Args:
         path_json (str): Directory path containing the JSON file.
-        filename (str): Name of the JSON file (without .json extension).
+        filename (str): Name of the JSON file (with .json extension).
 
     Returns:
         Dict: The loaded JSON data as a dictionary, or empty dict if file not found
@@ -27,7 +27,7 @@ def load_json_data(path_json: str, filename: str) -> Dict:
         {"publisher1": {"conferences": {...}}}
     """
     try:
-        file_path = os.path.join(path_json, f"{filename}.json")
+        file_path = os.path.join(path_json, filename)
         if not os.path.exists(file_path):
             return {}
 
@@ -35,11 +35,11 @@ def load_json_data(path_json: str, filename: str) -> Dict:
             return json.load(file)
 
     except Exception as e:
-        print(f"Error loading {filename}.json: {e}")
+        print(f"Error loading {filename}: {e}")
         return {}
 
 
-def update_json_file(path_root: str, conferences_or_journals: str) -> Dict[str, Any]:
+def update_json_file(full_json_cj: str, conferences_or_journals: str) -> Dict[str, Any]:
     """Update and format JSON file containing conference/journal data.
 
     This function loads JSON data, processes and formats text fields by splitting
@@ -47,21 +47,14 @@ def update_json_file(path_root: str, conferences_or_journals: str) -> Dict[str, 
     saves the updated data back to the file.
 
     Args:
-        path_root (str): Root directory path containing the JSON file.
+        full_json_cj (str): Full path to the conferences/journals JSON file
         conferences_or_journals (str): Type of publication ('conferences' or 'journals').
 
     Returns:
         Dict[str, Any]: Processed JSON data dictionary.
-
-    Raises:
-        ValueError: If duplicate abbreviations are found in the data.
-
-    Example:
-        >>> update_json_file("/data", "conferences")
-        {"publisher1": {"conferences": {"conf1": {...}}}}
     """
     # Load Json Data
-    json_dict = load_json_data(path_root, conferences_or_journals)
+    json_dict = load_json_data(os.path.dirname(full_json_cj), os.path.basename(full_json_cj))
 
     # Process and format text fields in JSON data.
     for pub in json_dict:
@@ -87,8 +80,7 @@ def update_json_file(path_root: str, conferences_or_journals: str) -> Dict[str, 
 
     # Save updated JSON
     if json_dict:
-        path_file = os.path.join(path_root, f"{conferences_or_journals}.json")
-        with open(path_file, "w", encoding="utf-8") as f:
+        with open(full_json_cj, "w", encoding="utf-8") as f:
             f.write(json.dumps(json_dict, indent=4, sort_keys=True, ensure_ascii=True))
 
     return json_dict

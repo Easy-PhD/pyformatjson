@@ -1,10 +1,21 @@
 # coding=utf-8
 
 import os
+import re
 from typing import List
 
 from ..core._base import standardize_path
 from .generate_dict import conference_journal_header
+
+
+def create_safe_filename(text: str) -> str:
+    """Create a safe filename across all platforms."""
+    # Remove or replace invalid characters
+    safe_text = re.sub(r'[<>:"/\\|?*]', '_', text)
+    # Remove leading/trailing spaces and dots
+    safe_text = safe_text.strip(' .')
+    # Ensure it's not empty
+    return safe_text if safe_text else "unnamed"
 
 
 def conference_journal_informations():
@@ -132,6 +143,22 @@ class WriteDataToMd(object):
 
     # --------- --------- --------- --------- --------- --------- --------- --------- --------- #
     def _default_or_customized_keywords(self, keywords_category_name: str, keywords_list: List[str]):
+        """Get default or customized keywords based on category and provided list.
+
+        This method returns either a filtered list of keywords based on the provided
+        category and keyword list, or all available keywords sorted alphabetically.
+
+        Args:
+            keywords_category_name (str): The category name for keywords filtering.
+            keywords_list (List[str]): List of keywords to filter by.
+
+        Returns:
+            List[str]: List of keywords to use for processing.
+
+        Example:
+            >>> writer._default_or_customized_keywords("ai", ["machine learning", "deep learning"])
+            ["deep learning", "machine learning"]
+        """
         keywords = list(self.keyword_abbr_meta_dict.keys())
 
         # Get and sort publication types
@@ -191,6 +218,18 @@ class WriteDataToMd(object):
         return None
 
     def save_categories_separate_keywords(self) -> None:
+        """Save publications categorized by keywords in separate files.
+
+        This method generates individual markdown files for each keyword category,
+        creating separate files for better organization and navigation.
+
+        Returns:
+            None: This method does not return a value.
+
+        Note:
+            Each keyword gets its own file saved as '{keyword}.md' in the
+            Categories_{type} subdirectory.
+        """
         conference_header, journal_header = conference_journal_header()
 
         # Add publications for each category
@@ -212,7 +251,7 @@ class WriteDataToMd(object):
             # Write keyword-specific file
             path_key = standardize_path(os.path.join(self.path_output, f"Categories_{self.cj.title()}"))
             # Create safe filename by replacing invalid characters
-            safe_keyword = "".join(c if c.isalnum() or c in "-_" else "_" for c in keyword)
+            safe_keyword = create_safe_filename(keyword).replace(" ", "_")
             with open(os.path.join(path_key, f"{safe_keyword}.md"), "w", encoding="utf-8") as f:
                 f.writelines(data_list)
 
@@ -264,6 +303,19 @@ class WriteDataToMd(object):
         return None
 
     def save_publishers_separate_abbrs(self) -> None:
+        """Save detailed publisher information in separate files.
+
+        This method generates individual markdown files for each publisher,
+        containing detailed information about their conferences/journals,
+        including about sections, remarks, and statistics.
+
+        Returns:
+            None: This method does not return a value.
+
+        Note:
+            Each publisher gets its own file saved as '{publisher}.md' in the
+            Publishers_{type} subdirectory.
+        """
         conference_header, journal_header = conference_journal_header()
         for pub in self.publisher_meta_dict:
             data_list = [f"# {pub}\n\n"]
@@ -317,6 +369,21 @@ class WriteDataToMd(object):
 
     # --------- --------- --------- --------- --------- --------- --------- --------- --------- #
     def save_statistics(self, keywords_category_name: str, keywords_list: List[str]) -> None:
+        """Save statistics overview file for keywords.
+
+        This method generates a markdown file containing statistics overview
+        for all keywords with links to their detailed pages.
+
+        Args:
+            keywords_category_name (str): The category name for keywords filtering.
+            keywords_list (List[str]): List of keywords to include in the output.
+
+        Returns:
+            None: This method does not return a value.
+
+        Note:
+            The output file is saved as 'Statistics_{type}_{category}.md' in the output directory.
+        """
         data_list = [
             f"# Statistics of keywords in {self.cj.title()}\n\n",
             "| |keywords|Separate Links|\n",
@@ -327,8 +394,9 @@ class WriteDataToMd(object):
         # Add publications for each category
         for keyword in self._default_or_customized_keywords(keywords_category_name, keywords_list):
             # Create safe filename for URL
-            safe_keyword = "".join(c if c.isalnum() or c in "-_" else "_" for c in keyword)
-            local_url = f"[Link](data/{self.cj.title()}/Statistics_{self.cj.title()}/{safe_keyword}.md)"
+            safe_keyword = create_safe_filename(keyword).replace(" ", "_")
+            ll = os.path.join("data", self.cj.title(), f"Statistics_{self.cj.title()}", f"{safe_keyword}.md")
+            local_url = f"[Link]({ll})"
 
             # Create table row
             row = f"| {idx} | {keyword} | {local_url} |\n"
@@ -344,6 +412,18 @@ class WriteDataToMd(object):
         return None
 
     def save_statistics_separate_abbrs(self) -> None:
+        """Save detailed statistics for each keyword in separate files.
+
+        This method generates individual markdown files for each keyword,
+        containing detailed statistics and publication information.
+
+        Returns:
+            None: This method does not return a value.
+
+        Note:
+            Each keyword gets its own file saved as '{keyword}.md' in the
+            Statistics_{type} subdirectory.
+        """
         conference_header, journal_header = conference_journal_header()
 
         # Add publications for each category
@@ -371,7 +451,7 @@ class WriteDataToMd(object):
             # Write publisher-specific file
             path_pub = standardize_path(os.path.join(self.path_output, f"Statistics_{self.cj.title()}"))
             # Create safe filename by replacing invalid characters
-            safe_keyword = "".join(c if c.isalnum() or c in "-_" else "_" for c in keyword)
+            safe_keyword = create_safe_filename(keyword).replace(" ", "_")
             with open(os.path.join(path_pub, f"{safe_keyword}.md"), "w", encoding="utf-8") as f:
                 f.writelines(data_list)
 

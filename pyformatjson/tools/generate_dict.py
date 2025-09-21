@@ -252,12 +252,26 @@ class GenerateDataDict(object):
         return full_name, abbr_name
 
     def _extract_homepage_url(self, abbr_dict: dict):
-        """Extract and clean homepage URL."""
+        """Extract and clean homepage URL.
+
+        Args:
+            abbr_dict (dict): Dictionary containing publication data.
+
+        Returns:
+            str: The first valid homepage URL, or empty string if none found.
+        """
         urls = [u.strip() for u in abbr_dict.get("urls_homepage", []) if u.strip()]
         return urls[0] if urls else ""
 
     def _format_period_with_dblp(self, abbr_dict: dict):
-        """Format publication period with DBLP link if available."""
+        """Format publication period with DBLP link if available.
+
+        Args:
+            abbr_dict (dict): Dictionary containing publication data.
+
+        Returns:
+            str: Formatted period string with optional DBLP link.
+        """
         start_year = abbr_dict.get("year_start", "")
         end_year = abbr_dict.get("year_end", "")
 
@@ -273,16 +287,41 @@ class GenerateDataDict(object):
         return period
 
     def _extract_text_content(self, abbr_dict: dict, key: str):
-        """Extract and clean text content from dictionary."""
+        """Extract and clean text content from dictionary.
+
+        Args:
+            abbr_dict (dict): Dictionary containing publication data.
+            key (str): Key to extract text content from.
+
+        Returns:
+            List[str]: List of non-empty text content.
+        """
         return [text for text in abbr_dict.get(key, []) if text.strip()]
 
     def _extract_first_url(self, abbr_dict: dict, key: str):
-        """Extract first URL from a list in dictionary."""
+        """Extract first URL from a list in dictionary.
+
+        Args:
+            abbr_dict (dict): Dictionary containing publication data.
+            key (str): Key to extract URLs from.
+
+        Returns:
+            str: The first valid URL, or empty string if none found.
+        """
         urls = [url.strip() for url in abbr_dict.get(key, []) if url.strip()]
         return urls[0].split(",")[0] if urls else ""
 
     def _process_keywords(self, abbr_dict: dict):
-        """Process keywords and convert to Google search URLs."""
+        """Process keywords and convert to Google search URLs.
+
+        Args:
+            abbr_dict (dict): Dictionary containing publication data.
+
+        Returns:
+            tuple: A tuple containing (keywords, keywords_url) where keywords
+                is a sorted list of unique keywords and keywords_url is a list
+                of markdown-formatted Google search links.
+        """
         keywords_dict = abbr_dict.get("keywords_dict", {})
 
         # Clean and sort keywords
@@ -315,13 +354,28 @@ class GenerateDataDict(object):
         return all_keywords, keywords_url
 
     def _format_top_score(self, abbr_dict: dict):
-        """Format top score with optional early access link."""
+        """Format top score with optional early access link.
+
+        Args:
+            abbr_dict (dict): Dictionary containing publication data.
+
+        Returns:
+            str: Formatted top score with optional early access link.
+        """
         is_top = "True" if abbr_dict.get("score_top", False) else "False"
         url_early_access = abbr_dict.get("url_early_access", "")
         return self._format_link(is_top, url_early_access)
 
     def _format_link(self, text, url):
-        """Format text as markdown link if URL provided."""
+        """Format text as markdown link if URL provided.
+
+        Args:
+            text (str): Text to display.
+            url (str): URL to link to.
+
+        Returns:
+            str: Markdown-formatted link or plain text if no URL provided.
+        """
         return f"[{text}]({url})" if url else text
 
     def _generate_table_row(
@@ -521,6 +575,19 @@ class GenerateDataDict(object):
 
     # Mermaid data
     def generate_mermaid_data(self, publisher: str, abbr: str, inproceedings_or_article: str):
+        """Generate Mermaid diagram data from spidered README files.
+
+        This method reads spidered data from README files and generates
+        Mermaid chart configuration for visualizing publication statistics.
+
+        Args:
+            publisher (str): Publisher name.
+            abbr (str): Publication abbreviation.
+            inproceedings_or_article (str): Publication type.
+
+        Returns:
+            List[str]: Mermaid chart configuration lines, or empty list if no data found.
+        """
         path_spidered_cj = self.path_spidered_cj if self.path_spidered_cj else ""
         path_readme = os.path.join(path_spidered_cj, publisher, abbr, inproceedings_or_article)
         full_readme = os.path.expanduser(os.path.join(path_readme, "README.md"))
