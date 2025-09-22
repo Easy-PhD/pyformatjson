@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyformatjson"
-version = "0.0.4"
+version = "0.2.0"
 description = "pyformatjson"
 license = "GPL-3.0-or-later"
 authors = ["NextAI <nextartifintell@gmail.com>"]
@@ -13,7 +13,7 @@ keywords = ["Python", "Json"]
 classifiers = ["Topic :: Software Development :: Libraries :: Python Modules"]
 
 [tool.poetry.dependencies]
-python = ">=3.13"
+python = ">=3.12"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.18.2"
