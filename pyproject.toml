@@ -6,9 +6,9 @@ license = "GPL-3.0-or-later"
 authors = ["NextAI <nextartifintell@gmail.com>"]
 maintainers = ["NextAI <nextartifintell@gmail.com>"]
 readme = ["README.md"]
-homepage = "https://github.com/NextArtifIntell/pyformatjson"
-repository = "https://github.com/NextArtifIntell/pyformatjson"
-documentation = "https://github.com/NextArtifIntell/pyformatjson"
+homepage = "https://github.com/Easy-PhD/pyformatjson"
+repository = "https://github.com/Easy-PhD/pyformatjson"
+documentation = "https://github.com/Easy-PhD/pyformatjson"
 keywords = ["Python", "Json"]
 classifiers = ["Topic :: Software Development :: Libraries :: Python Modules"]
 
