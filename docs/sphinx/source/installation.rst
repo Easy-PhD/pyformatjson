@@ -7,17 +7,17 @@ Pip
 
 .. code-block:: bash
 
-   pip install pyadvtools
+   pip install pyformatjson
 
 UV
 
 .. code-block:: bash
 
-   uv add pyadvtools
+   uv add pyformatjson
 
 
 Poetry
 
 .. code-block:: bash
 
-   poetry add pyadvtools
+   poetry add pyformatjson
