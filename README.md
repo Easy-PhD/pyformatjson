@@ -1,1 +1,6 @@
 # PyFormatJson
+
+![Visitors](https://visitor-badge.laobi.icu/badge?page_id=Easy-PhD.pyformatjson)
+[![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyformatjson)
+[![PyPI](https://img.shields.io/pypi/v/pyformatjson)](https://pypi.org/project/pyformatjson/)
