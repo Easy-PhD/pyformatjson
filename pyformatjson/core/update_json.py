@@ -2,30 +2,13 @@
 
 import json
 import os
-from typing import Any, Dict
+import re
+from typing import Any, Dict, List, Tuple
 
 from ._base import split_data_list, split_text_by_length
 
 
 def load_json_data(path_json: str, filename: str) -> Dict:
-    """Load JSON data from a specified file.
-
-    This function attempts to load JSON data from a file located in the specified
-    directory. If the file doesn't exist or there's an error loading it, an empty
-    dictionary is returned.
-
-    Args:
-        path_json (str): Directory path containing the JSON file.
-        filename (str): Name of the JSON file (with .json extension).
-
-    Returns:
-        Dict: The loaded JSON data as a dictionary, or empty dict if file not found
-            or error occurs.
-
-    Example:
-        >>> load_json_data("/data", "conferences")
-        {"publisher1": {"conferences": {...}}}
-    """
     try:
         file_path = os.path.join(path_json, filename)
         if not os.path.exists(file_path):
@@ -75,36 +58,22 @@ def update_json_file(full_json_cj: str, conferences_or_journals: str) -> Dict[st
                 if temps:
                     json_dict[pub][conferences_or_journals][abbr].update({flag: temps})
 
-    # Check for duplicate abbreviations
-    _check_duplicate_abbr(json_dict, conferences_or_journals)
+    # Generate standard form
+    abbr_dict = generate_standard_form(json_dict, conferences_or_journals)
+
+    _, flag = CheckAcronymAbbrAndFullDict().run(abbr_dict)
 
     # Save updated JSON
-    if json_dict:
+    if flag and json_dict:
         with open(full_json_cj, "w", encoding="utf-8") as f:
             f.write(json.dumps(json_dict, indent=4, sort_keys=True, ensure_ascii=True))
 
     return json_dict
 
 
-def _check_duplicate_abbr(json_dict: Dict[str, Any], conferences_or_journals: str) -> None:
-    """Check for duplicate abbreviations in the data.
-
-    This function validates that there are no duplicate abbreviations within
-    the same publication type across all publishers.
-
-    Args:
-        json_dict (Dict[str, Any]): JSON data dictionary containing publication information.
-        conferences_or_journals (str): Type of publication ('conferences' or 'journals').
-
-    Raises:
-        ValueError: If duplicate abbreviations are found in the data.
-
-    Example:
-        >>> _check_duplicate_abbr(data, "conferences")
-        # Raises ValueError if "ICML" appears twice in conferences
-    """
+def generate_standard_form(json_dict: Dict[str, Any], conferences_or_journals: str):
+    # Check for duplicate abbreviations in the data.
     abbr_list = []
-
     for pub in json_dict:
         if conferences_or_journals in json_dict[pub]:
             for abbr in json_dict[pub][conferences_or_journals]:
@@ -112,4 +81,124 @@ def _check_duplicate_abbr(json_dict: Dict[str, Any], conferences_or_journals: st
                     raise ValueError(f"Duplicate abbreviation: {abbr} in {conferences_or_journals} {pub}")
                 abbr_list.append(abbr)
 
-    return None
+    # Extract abbreviation and name data from all publications
+    abbr_dict: Dict[str, Dict[str, List[str]]] = {}
+    for pub in json_dict:
+        if conferences_or_journals in json_dict[pub]:
+            for abbr, v in json_dict[pub][conferences_or_journals].items():
+                # Store both abbreviated names and full names for each abbreviation
+                abbr_dict.update({abbr: {"names_abbr": v.get("names_abbr", []), "names_full": v.get("names_full", [])}})
+
+    return abbr_dict
+
+
+class CheckAcronymAbbrAndFullDict:
+    def __init__(self, names_abbr="names_abbr", names_full="names_full"):
+        self.names_abbr = names_abbr
+        self.names_full = names_full
+
+    def run(self, dict_data: dict[str, dict[str, list[str]]]) -> Tuple[dict[str, dict[str, list[str]]], bool]:
+        # Check if each acronym has equal number of abbreviations and full forms
+        dict_data, length_check = self._validate_lengths(dict_data)
+
+        # Check for duplicate abbreviations or full forms across all acronyms
+        dict_data, duplicate_check = self._check_duplicates(dict_data)
+
+        # Check for matching patterns in both abbreviations and full forms
+        dict_data, abbr_match_check = self._check_matches(dict_data, self.names_abbr)
+        dict_data, full_match_check = self._check_matches(dict_data, self.names_full)
+
+        return dict_data, all([length_check, duplicate_check, abbr_match_check, full_match_check])
+
+    def _validate_lengths(self, dict_data):
+        """Validate that each acronym has equal number of abbreviations and full forms."""
+        valid_data, all_valid = {}, True
+        for acronym, value_dict in dict_data.items():
+            names_abbr = value_dict.get(self.names_abbr, [])
+            names_full = value_dict.get(self.names_full, [])
+
+            if len(names_abbr) != len(names_full):
+                all_valid = False
+                print(
+                    f"Length mismatch in '{acronym}': {len(names_abbr)} abbreviations vs {len(names_full)} full forms"
+                )
+            else:
+                valid_data[acronym] = value_dict
+        return valid_data, all_valid
+
+    def _check_duplicates(self, data):
+        """Check for duplicate abbreviations or full forms across all acronyms."""
+        valid_data = {}
+        all_unique = True
+        seen_abbrs = set()
+        seen_fulls = set()
+
+        for acronym, values in data.items():
+            has_duplicate = False
+
+            # Check for duplicate abbreviations
+            abbrs_lower = set([abbr.lower() for abbr in values.get(self.names_abbr, [])])
+            for abbr in abbrs_lower:
+                if abbr in seen_abbrs:
+                    print(f"Duplicate abbreviation '{abbr}' found in '{acronym}'")
+                    has_duplicate = True
+                else:
+                    seen_abbrs.add(abbr)
+
+            # Check for duplicate full forms
+            fulls_lower = set([full.lower() for full in values.get(self.names_full, [])])
+            for full in fulls_lower:
+                if full in seen_fulls:
+                    print(f"Duplicate full form '{full}' found in '{acronym}'")
+                    has_duplicate = True
+                else:
+                    seen_fulls.add(full)
+
+            if not has_duplicate:
+                valid_data[acronym] = values
+            else:
+                all_unique = False
+
+        return valid_data, all_unique
+
+    def _check_matches(self, data, key_type: str):
+        """Check for exact matches in abbreviations or full forms between different acronyms."""
+        valid_data = {}
+        no_matches = True
+        acronyms = sorted(list(data.keys()))
+
+        for i, main_acronym in enumerate(acronyms):
+            # Normalize items: lowercase and remove parentheses
+            main_items = [
+                item.lower().replace("(", "").replace(")", "")
+                for item in data[main_acronym].get(key_type, [])
+            ]
+
+            # Create exact match patterns
+            patterns = [re.compile(f"^{item}$") for item in main_items]
+
+            matches_found = []
+
+            # Compare with other acronyms
+            for other_acronym in acronyms[i + 1:]:
+                other_items = [
+                    item.lower().replace("(", "").replace(")", "")
+                    for item in data[other_acronym].get(key_type, [])
+                ]
+
+                # Find matching items
+                matching_items = [
+                    item for item in other_items
+                    if any(pattern.match(item) for pattern in patterns)
+                ]
+
+                if matching_items:
+                    matches_found.append([main_acronym, other_acronym, matching_items])
+
+            if matches_found:
+                no_matches = False
+                print(f"Found matches in {key_type}: {matches_found}")
+            else:
+                valid_data[main_acronym] = data[main_acronym]
+
+        return valid_data, no_matches
