@@ -1,8 +1,5 @@
-# coding=utf-8
-
 import os
 import re
-from typing import List
 
 from ..core._base import standardize_path
 from .generate_dict import conference_journal_header
@@ -42,7 +39,7 @@ def conference_journal_informations():
     return conference_inf, journal_inf
 
 
-class WriteDataToMd(object):
+class WriteDataToMd:
     """Class to write publication data to Markdown files.
 
     This class provides methods to generate various markdown documentation files
@@ -142,7 +139,7 @@ class WriteDataToMd(object):
             f.writelines(data_list)
 
     # --------- --------- --------- --------- --------- --------- --------- --------- --------- #
-    def _default_or_customized_keywords(self, keywords_category_name: str, keywords_list: List[str]):
+    def _default_or_customized_keywords(self, keywords_category_name: str, keywords_list: list[str]):
         """Get default or customized keywords based on category and provided list.
 
         This method returns either a filtered list of keywords based on the provided
@@ -150,10 +147,10 @@ class WriteDataToMd(object):
 
         Args:
             keywords_category_name (str): The category name for keywords filtering.
-            keywords_list (List[str]): List of keywords to filter by.
+            keywords_list (list[str]): List of keywords to filter by.
 
         Returns:
-            List[str]: List of keywords to use for processing.
+            list[str]: List of keywords to use for processing.
 
         Example:
             >>> writer._default_or_customized_keywords("ai", ["machine learning", "deep learning"])
@@ -173,7 +170,7 @@ class WriteDataToMd(object):
             return sorted(keywords)
 
     # --------- --------- --------- --------- --------- --------- --------- --------- --------- #
-    def save_categories(self, keywords_category_name: str, keywords_list: List[str]) -> None:
+    def save_categories(self, keywords_category_name: str, keywords_list: list[str]) -> None:
         """Save publications categorized by keywords.
 
         This method generates markdown files organizing publications by their
@@ -181,7 +178,7 @@ class WriteDataToMd(object):
 
         Args:
             keywords_category_name (str): The category name for keywords filtering.
-            keywords_list (List[str]): List of keywords to include in the output.
+            keywords_list (list[str]): List of keywords to include in the output.
 
         Returns:
             None: This method does not return a value.
@@ -368,7 +365,7 @@ class WriteDataToMd(object):
         return None
 
     # --------- --------- --------- --------- --------- --------- --------- --------- --------- #
-    def save_statistics(self, keywords_category_name: str, keywords_list: List[str]) -> None:
+    def save_statistics(self, keywords_category_name: str, keywords_list: list[str]) -> None:
         """Save statistics overview file for keywords.
 
         This method generates a markdown file containing statistics overview
@@ -376,7 +373,7 @@ class WriteDataToMd(object):
 
         Args:
             keywords_category_name (str): The category name for keywords filtering.
-            keywords_list (List[str]): List of keywords to include in the output.
+            keywords_list (list[str]): List of keywords to include in the output.
 
         Returns:
             None: This method does not return a value.

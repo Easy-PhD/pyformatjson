@@ -1,11 +1,8 @@
-# coding=utf-8
-
 import os
 import re
-from typing import List
 
 
-def split_text_by_length(text, max_length=120) -> List[str]:
+def split_text_by_length(text, max_length=120) -> list[str]:
     """Split text into lines of specified maximum length.
 
     This function breaks long text into multiple lines, ensuring each line
@@ -17,7 +14,7 @@ def split_text_by_length(text, max_length=120) -> List[str]:
         max_length (int, optional): Maximum length for each line. Defaults to 120.
 
     Returns:
-        List[str]: A list of text lines, each not exceeding max_length characters.
+        list[str]: A list of text lines, each not exceeding max_length characters.
 
     Example:
         >>> split_text_by_length("This is a very long text that needs to be split", 20)
@@ -44,8 +41,8 @@ def split_text_by_length(text, max_length=120) -> List[str]:
     return new_lines
 
 
-def split_data_list(split_pattern: str, data_list: List[str], last_next: str = "next") -> List[str]:
-    """Split data list according to the split pattern.
+def split_data_list(split_pattern: str, data_list: list[str], last_next: str = "next") -> list[str]:
+    r"""Split data list according to the split pattern.
 
     This function splits each string in the data list using the provided regex pattern
     and reconstructs the data based on the last_next parameter. The pattern must use
@@ -54,13 +51,13 @@ def split_data_list(split_pattern: str, data_list: List[str], last_next: str = "
     Args:
         split_pattern (str): Regular expression pattern for splitting. Must use capturing
             parentheses, e.g., r"(\n)" for newline splits.
-        data_list (List[str]): List of strings to be split and processed.
+        data_list (list[str]): List of strings to be split and processed.
         last_next (str, optional): Determines how to handle split parts. "next" places
             the split character at the beginning of the next part, "last" places it at
             the end of the current part. Defaults to "next".
 
     Returns:
-        List[str]: New list of processed strings with empty strings filtered out.
+        list[str]: New list of processed strings with empty strings filtered out.
 
     Raises:
         re.error: If the split_pattern is not a valid regular expression.
@@ -72,8 +69,8 @@ def split_data_list(split_pattern: str, data_list: List[str], last_next: str = "
     new_data_list = []
     for line in data_list:
         split_list = re.split(split_pattern, line)
-        list_one = split_list[0 : len(split_list) : 2]
-        list_two = split_list[1 : len(split_list) : 2]
+        list_one = split_list[0: len(split_list): 2]
+        list_two = split_list[1: len(split_list): 2]
 
         temp = []
         if last_next == "next":
@@ -109,7 +106,7 @@ def standardize_path(path_input: str) -> str:
     return path_input
 
 
-def sort_strings_with_embedded_numbers(s: str) -> List[str]:
+def sort_strings_with_embedded_numbers(s: str) -> list[str]:
     """Split string into pieces for natural sorting with embedded numbers.
 
     This function splits a string into pieces where numbers are converted to integers
@@ -119,7 +116,7 @@ def sort_strings_with_embedded_numbers(s: str) -> List[str]:
         s (str): The string to be split into sortable pieces.
 
     Returns:
-        List[str]: List of string pieces with numbers converted to integers.
+        list[str]: List of string pieces with numbers converted to integers.
 
     Example:
         >>> sort_strings_with_embedded_numbers("item10")
@@ -131,18 +128,18 @@ def sort_strings_with_embedded_numbers(s: str) -> List[str]:
     return pieces
 
 
-def sort_int_str(str_int: List[str], reverse: bool = False) -> List[str]:
+def sort_int_str(str_int: list[str], reverse: bool = False) -> list[str]:
     """Sort list of strings with embedded numbers naturally.
 
     This function sorts a list of strings using natural sorting that handles
     embedded numbers correctly (e.g., "item2" comes before "item10").
 
     Args:
-        str_int (List[str]): List of strings to be sorted.
+        str_int (list[str]): List of strings to be sorted.
         reverse (bool, optional): If True, sorts in descending order. Defaults to False.
 
     Returns:
-        List[str]: Sorted list of strings.
+        list[str]: Sorted list of strings.
 
     Example:
         >>> sort_int_str(["item10", "item2", "item1"])
@@ -151,7 +148,7 @@ def sort_int_str(str_int: List[str], reverse: bool = False) -> List[str]:
     return sorted(str_int, key=sort_strings_with_embedded_numbers, reverse=reverse)
 
 
-class IterateSortDict(object):
+class IterateSortDict:
     """A class for recursively sorting dictionary keys with natural sorting.
 
     This class provides methods to sort dictionary keys recursively, handling

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyformatjson"
-version = "0.2.4"
+version = "0.2.5"
 description = "pyformatjson"
 license = "GPL-3.0-or-later"
 authors = ["NextAI <nextartifintell@gmail.com>"]
@@ -23,8 +23,6 @@ sphinx-copybutton = "^0.5.2"
 [tool.pyright]
 venvPath = "."
 venv = ".venv"
-reportOptionalSubscript = "none"  # "none", "information", "error"
-reportIncompatibleMethodOverride = "none"  # "none", "information", "error"
 
 [tool.ruff]
 line-length = 120
@@ -48,6 +46,7 @@ extend-select = [
     "A",   # flake8-builtins
     "C4",  # flake8-comprehensions
     "RUF", # Ruff-specific rules
+    "BLE", # flake8-blind-except
 ]
 
 ignore = [
@@ -58,12 +57,16 @@ ignore = [
     "ANN202",  # Missing return type of private function
     "ANN204",  # Missing return type annotation for special method `__init__`
     "ANN205",  # Missing return type annotation for staticmethod
+    "D101",  # Missing docstring in public class
     "D102",  # Missing docstring in public method
     "D103",  # Missing docstring in public function
+    "D104",  # Missing docstring in public package
     "D107",  # Missing docstring in `__init__`
+    "D100",  # Missing docstring in public module
     "D204",  # 1 blank line required after class docstring
     "D417",  # Missing argument description in the docstring
     "RUF002",  # Docstring contains ambiguous `–` (EN-DASH)
+    "RUF022",  # `__all__` is not sorted
 ]
 
 [tool.ruff.lint.pydocstyle]

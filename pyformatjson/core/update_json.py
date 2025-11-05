@@ -1,20 +1,18 @@
-# coding=utf-8
-
 import json
 import os
 import re
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from ._base import split_data_list, split_text_by_length
 
 
-def load_json_data(path_json: str, filename: str) -> Dict:
+def load_json_data(path_json: str, filename: str) -> dict:
     try:
         file_path = os.path.join(path_json, filename)
         if not os.path.exists(file_path):
             return {}
 
-        with open(file_path, "r", encoding="utf-8") as file:
+        with open(file_path, encoding="utf-8") as file:
             return json.load(file)
 
     except Exception as e:
@@ -22,7 +20,7 @@ def load_json_data(path_json: str, filename: str) -> Dict:
         return {}
 
 
-def update_json_file(full_json_cj: str, conferences_or_journals: str) -> Dict[str, Any]:
+def update_json_file(full_json_cj: str, conferences_or_journals: str) -> dict[str, Any]:
     """Update and format JSON file containing conference/journal data.
 
     This function loads JSON data, processes and formats text fields by splitting
@@ -34,7 +32,7 @@ def update_json_file(full_json_cj: str, conferences_or_journals: str) -> Dict[st
         conferences_or_journals (str): Type of publication ('conferences' or 'journals').
 
     Returns:
-        Dict[str, Any]: Processed JSON data dictionary.
+        dict[str, Any]: Processed JSON data dictionary.
     """
     # Load Json Data
     json_dict = load_json_data(os.path.dirname(full_json_cj), os.path.basename(full_json_cj))
@@ -71,7 +69,7 @@ def update_json_file(full_json_cj: str, conferences_or_journals: str) -> Dict[st
     return json_dict
 
 
-def generate_standard_form(json_dict: Dict[str, Any], conferences_or_journals: str):
+def generate_standard_form(json_dict: dict[str, Any], conferences_or_journals: str):
     # Check for duplicate abbreviations in the data.
     abbr_list = []
     for pub in json_dict:
@@ -82,7 +80,7 @@ def generate_standard_form(json_dict: Dict[str, Any], conferences_or_journals: s
                 abbr_list.append(abbr)
 
     # Extract abbreviation and name data from all publications
-    abbr_dict: Dict[str, Dict[str, List[str]]] = {}
+    abbr_dict: dict[str, dict[str, list[str]]] = {}
     for pub in json_dict:
         if conferences_or_journals in json_dict[pub]:
             for abbr, v in json_dict[pub][conferences_or_journals].items():
@@ -97,7 +95,7 @@ class CheckAcronymAbbrAndFullDict:
         self.names_abbr = names_abbr
         self.names_full = names_full
 
-    def run(self, dict_data: dict[str, dict[str, list[str]]]) -> Tuple[dict[str, dict[str, list[str]]], bool]:
+    def run(self, dict_data: dict[str, dict[str, list[str]]]) -> tuple[dict[str, dict[str, list[str]]], bool]:
         # Check if each acronym has equal number of abbreviations and full forms
         dict_data, length_check = self._validate_lengths(dict_data)
 
@@ -137,7 +135,7 @@ class CheckAcronymAbbrAndFullDict:
             has_duplicate = False
 
             # Check for duplicate abbreviations
-            abbrs_lower = set([abbr.lower() for abbr in values.get(self.names_abbr, [])])
+            abbrs_lower = {abbr.lower() for abbr in values.get(self.names_abbr, [])}
             for abbr in abbrs_lower:
                 if abbr in seen_abbrs:
                     print(f"Duplicate abbreviation '{abbr}' found in '{acronym}'")
@@ -146,7 +144,7 @@ class CheckAcronymAbbrAndFullDict:
                     seen_abbrs.add(abbr)
 
             # Check for duplicate full forms
-            fulls_lower = set([full.lower() for full in values.get(self.names_full, [])])
+            fulls_lower = {full.lower() for full in values.get(self.names_full, [])}
             for full in fulls_lower:
                 if full in seen_fulls:
                     print(f"Duplicate full form '{full}' found in '{acronym}'")
@@ -165,40 +163,41 @@ class CheckAcronymAbbrAndFullDict:
         """Check for exact matches in abbreviations or full forms between different acronyms."""
         valid_data = {}
         no_matches = True
-        acronyms = sorted(list(data.keys()))
+        acronyms_bak = sorted(data.keys())
 
-        for i, main_acronym in enumerate(acronyms):
-            # Normalize items: lowercase and remove parentheses
-            main_items = [
-                item.lower().replace("(", "").replace(")", "")
-                for item in data[main_acronym].get(key_type, [])
-            ]
-
-            # Create exact match patterns
-            patterns = [re.compile(f"^{item}$") for item in main_items]
-
-            matches_found = []
-
-            # Compare with other acronyms
-            for other_acronym in acronyms[i + 1:]:
-                other_items = [
+        for acronyms in [acronyms_bak, acronyms_bak[::-1]]:
+            for i, main_acronym in enumerate(acronyms):
+                # Normalize items: lowercase and remove parentheses
+                main_items = [
                     item.lower().replace("(", "").replace(")", "")
-                    for item in data[other_acronym].get(key_type, [])
+                    for item in data[main_acronym].get(key_type, [])
                 ]
 
-                # Find matching items
-                matching_items = [
-                    item for item in other_items
-                    if any(pattern.match(item) for pattern in patterns)
-                ]
+                # Create exact match patterns
+                patterns = [re.compile(f"^{item}$") for item in main_items]
 
-                if matching_items:
-                    matches_found.append([main_acronym, other_acronym, matching_items])
+                matches_found = []
 
-            if matches_found:
-                no_matches = False
-                print(f"Found matches in {key_type}: {matches_found}")
-            else:
-                valid_data[main_acronym] = data[main_acronym]
+                # Compare with other acronyms
+                for other_acronym in acronyms[i + 1:]:
+                    other_items = [
+                        item.lower().replace("(", "").replace(")", "")
+                        for item in data[other_acronym].get(key_type, [])
+                    ]
+
+                    # Find matching items
+                    matching_items = [
+                        item for item in other_items
+                        if any(pattern.match(item) for pattern in patterns)
+                    ]
+
+                    if matching_items:
+                        matches_found.append([main_acronym, other_acronym, matching_items])
+
+                if matches_found:
+                    no_matches = False
+                    print(f"Found matches in {key_type}: {matches_found}")
+                else:
+                    valid_data[main_acronym] = data[main_acronym]
 
         return valid_data, no_matches

@@ -1,9 +1,6 @@
-# coding=utf-8
-
 import os
 import re
 from datetime import datetime
-from typing import Optional
 
 
 def conference_journal_header():
@@ -35,7 +32,7 @@ def conference_journal_header():
     return conference_header, journal_header
 
 
-class GenerateDataDict(object):
+class GenerateDataDict:
     """Generate data dictionaries from JSON input for conferences and journals.
 
     This class processes JSON data containing conference or journal information
@@ -65,7 +62,7 @@ class GenerateDataDict(object):
         inproceedings_or_article: str,
         json_dict: dict,
         for_vue: bool = True,
-        path_spidered_conferences_or_journals: Optional[str] = None,
+        path_spidered_conferences_or_journals: str | None = None,
     ) -> None:
         """Initialize the GenerateDataDict instance.
 
@@ -294,7 +291,7 @@ class GenerateDataDict(object):
             key (str): Key to extract text content from.
 
         Returns:
-            List[str]: List of non-empty text content.
+            list[str]: List of non-empty text content.
         """
         return [text for text in abbr_dict.get(key, []) if text.strip()]
 
@@ -328,7 +325,7 @@ class GenerateDataDict(object):
         cleaned_keywords = {}
         for category, words in keywords_dict.items():
             if category.strip():
-                sorted_words = sorted(set([word.strip() for word in words if word.strip()]))
+                sorted_words = sorted({word.strip() for word in words if word.strip()})
                 cleaned_keywords[category.strip()] = sorted_words
 
         # Flatten keywords and remove duplicates
@@ -395,8 +392,7 @@ class GenerateDataDict(object):
     def _generate_for_conference(
         self, publisher_url, full_name, abbr_name, url_home, url_about, period, top, keywords, abbr, abbr_dict
     ):
-        """
-        Generate a markdown table row for conference information.
+        """Generate a markdown table row for conference information.
 
         Args:
             publisher_url: URL of the publisher
@@ -528,8 +524,7 @@ class GenerateDataDict(object):
     def _generate_for_journal(
         self, publisher_url, full_name, abbr_name, url_home, url_about, period, top, keywords, abbr, abbr_dict
     ):
-        """
-        Generate a markdown table row for journal information.
+        r"""Generate a markdown table row for journal information.
 
         Args:
             publisher_url: URL of the publisher
@@ -586,7 +581,7 @@ class GenerateDataDict(object):
             inproceedings_or_article (str): Publication type.
 
         Returns:
-            List[str]: Mermaid chart configuration lines, or empty list if no data found.
+            list[str]: Mermaid chart configuration lines, or empty list if no data found.
         """
         path_spidered_cj = self.path_spidered_cj if self.path_spidered_cj else ""
         path_readme = os.path.join(path_spidered_cj, publisher, abbr, inproceedings_or_article)
@@ -597,7 +592,7 @@ class GenerateDataDict(object):
         mermaid, data_dict = [], {}
         # |AAAI|1980|95|Proceedings of the First National Conference on Artificial Intelligence|
         regex = re.compile(r"\|.*\|([0-9]+)\|([0-9]+)\|.*\|")
-        with open(full_readme, "r", encoding="utf-8") as file:
+        with open(full_readme, encoding="utf-8") as file:
             data_list = file.readlines()
         for line in data_list:
             if mch := regex.search(line):

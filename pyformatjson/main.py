@@ -1,7 +1,4 @@
-# coding=utf-8
-
 import os
-from typing import Optional
 
 from .core._base import standardize_path
 from .core.update_json import load_json_data, update_json_file
@@ -14,7 +11,7 @@ def main_generate_md_files(
     full_json_j: str,
     full_json_k: str,
     path_output: str,
-    path_spidered_bibs: Optional[str] = None,
+    path_spidered_bibs: str | None = None,
     keywords_category_name: str = "",
     for_vue: bool = True,
 ) -> None:
@@ -70,7 +67,7 @@ def main_generate_md_files(
         keywords_list, keywords_category_name = [], ""
 
     # Process both conferences and journals
-    for cj, ia in zip(["conferences", "journals"], ["inproceedings", "article"]):
+    for cj, ia in zip(["conferences", "journals"], ["inproceedings", "article"], strict=True):
         # Update JSON data
         json_dict = {}
         if cj == "conferences":
