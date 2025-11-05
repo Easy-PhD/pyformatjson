@@ -15,7 +15,7 @@ def create_safe_filename(text: str) -> str:
     return safe_text if safe_text else "unnamed"
 
 
-def conference_journal_informations():
+def conference_journal_informations() -> tuple[list[str], list[str]]:
     """Generate informational content for conferences and journals.
 
     This function provides additional informational content that can be

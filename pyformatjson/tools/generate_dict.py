@@ -1,9 +1,10 @@
 import os
 import re
 from datetime import datetime
+from typing import Any
 
 
-def conference_journal_header():
+def conference_journal_header() -> tuple[list[str], list[str]]:
     """Generate markdown table headers for conferences and journals.
 
     This function creates the appropriate markdown table headers for displaying
@@ -82,7 +83,7 @@ class GenerateDataDict:
         self.path_spidered_cj = path_spidered_conferences_or_journals
         self.for_vue = for_vue
 
-    def generate(self):
+    def generate(self) -> tuple[dict, dict, dict]:
         """Generate publisher metadata and keyword-based publication information.
 
         This method processes the JSON data to create three main dictionaries:
@@ -161,7 +162,7 @@ class GenerateDataDict:
 
         return publisher_meta_dict, publisher_abbr_meta_dict, keyword_abbr_meta_dict
 
-    def conference_or_journal(self, publisher_url: str, abbr: str, abbr_dict: dict):
+    def conference_or_journal(self, publisher_url: str, abbr: str, abbr_dict: dict) -> tuple[dict[str, Any], list[str]]:
         """Process conference or journal data and generate formatted information.
 
         This method processes individual conference or journal data, validates
@@ -214,7 +215,7 @@ class GenerateDataDict:
 
         return {"txt_abouts": abouts, "txt_remarks": remarks, "row_inf": row_inf}, keywords
 
-    def _validate_name_lengths(self, abbr_dict: dict):
+    def _validate_name_lengths(self, abbr_dict: dict) -> None:
         """Validate that full and abbreviated names arrays have equal length.
 
         This method ensures that the full names and abbreviated names arrays
@@ -231,7 +232,9 @@ class GenerateDataDict:
         if len(full_names) != len(abbr_names):
             raise ValueError(f"Length mismatch: {len(full_names)} {full_names} vs {len(abbr_names)} abbreviated names")
 
-    def _extract_full_abbr_names(self, abbr_dict: dict):
+        return None
+
+    def _extract_full_abbr_names(self, abbr_dict: dict) -> tuple[str, str]:
         """Extract full and abbreviated names from dictionary.
 
         This method extracts the appropriate full and abbreviated names based on
@@ -248,11 +251,11 @@ class GenerateDataDict:
         abbr_name = abbr_dict.get("names_abbr", [""])[0]
         return full_name, abbr_name
 
-    def _extract_homepage_url(self, abbr_dict: dict):
+    def _extract_homepage_url(self, abbr_dict: dict[str, Any]) -> str:
         """Extract and clean homepage URL.
 
         Args:
-            abbr_dict (dict): Dictionary containing publication data.
+            abbr_dict (dict[str, Any]): Dictionary containing publication data.
 
         Returns:
             str: The first valid homepage URL, or empty string if none found.
@@ -260,11 +263,11 @@ class GenerateDataDict:
         urls = [u.strip() for u in abbr_dict.get("urls_homepage", []) if u.strip()]
         return urls[0] if urls else ""
 
-    def _format_period_with_dblp(self, abbr_dict: dict):
+    def _format_period_with_dblp(self, abbr_dict: dict[str, Any]) -> str:
         """Format publication period with DBLP link if available.
 
         Args:
-            abbr_dict (dict): Dictionary containing publication data.
+            abbr_dict (dict[str, Any]): Dictionary containing publication data.
 
         Returns:
             str: Formatted period string with optional DBLP link.
@@ -283,11 +286,11 @@ class GenerateDataDict:
 
         return period
 
-    def _extract_text_content(self, abbr_dict: dict, key: str):
+    def _extract_text_content(self, abbr_dict: dict[str, Any], key: str):
         """Extract and clean text content from dictionary.
 
         Args:
-            abbr_dict (dict): Dictionary containing publication data.
+            abbr_dict (dict[str, Any]): Dictionary containing publication data.
             key (str): Key to extract text content from.
 
         Returns:
@@ -295,11 +298,11 @@ class GenerateDataDict:
         """
         return [text for text in abbr_dict.get(key, []) if text.strip()]
 
-    def _extract_first_url(self, abbr_dict: dict, key: str):
+    def _extract_first_url(self, abbr_dict: dict[str, Any], key: str):
         """Extract first URL from a list in dictionary.
 
         Args:
-            abbr_dict (dict): Dictionary containing publication data.
+            abbr_dict (dict[str, Any]): Dictionary containing publication data.
             key (str): Key to extract URLs from.
 
         Returns:
@@ -308,11 +311,11 @@ class GenerateDataDict:
         urls = [url.strip() for url in abbr_dict.get(key, []) if url.strip()]
         return urls[0].split(",")[0] if urls else ""
 
-    def _process_keywords(self, abbr_dict: dict):
+    def _process_keywords(self, abbr_dict: dict[str, Any]):
         """Process keywords and convert to Google search URLs.
 
         Args:
-            abbr_dict (dict): Dictionary containing publication data.
+            abbr_dict (dict[str, Any]): Dictionary containing publication data.
 
         Returns:
             tuple: A tuple containing (keywords, keywords_url) where keywords
@@ -350,11 +353,11 @@ class GenerateDataDict:
 
         return all_keywords, keywords_url
 
-    def _format_top_score(self, abbr_dict: dict):
+    def _format_top_score(self, abbr_dict: dict[str, Any]):
         """Format top score with optional early access link.
 
         Args:
-            abbr_dict (dict): Dictionary containing publication data.
+            abbr_dict (dict[str, Any]): Dictionary containing publication data.
 
         Returns:
             str: Formatted top score with optional early access link.
@@ -376,7 +379,17 @@ class GenerateDataDict:
         return f"[{text}]({url})" if url else text
 
     def _generate_table_row(
-        self, publisher_url, full_name, abbr_name, url_home, url_about, period, top, keywords, abbr, abbr_dict
+        self,
+        publisher_url: str,
+        full_name: str,
+        abbr_name: str,
+        url_home: str,
+        url_about: str,
+        period: str,
+        top: str,
+        keywords: list[str],
+        abbr: str,
+        abbr_dict: dict[str, Any],
     ):
         """Generate appropriate table row based on publication type."""
         if self.cj == "conferences":
@@ -390,7 +403,17 @@ class GenerateDataDict:
 
     # Conferences
     def _generate_for_conference(
-        self, publisher_url, full_name, abbr_name, url_home, url_about, period, top, keywords, abbr, abbr_dict
+        self,
+        publisher_url: str,
+        full_name: str,
+        abbr_name: str,
+        url_home: str,
+        url_about: str,
+        period: str,
+        top: str,
+        keywords: list[str],
+        abbr: str,
+        abbr_dict: dict[str, Any],
     ):
         """Generate a markdown table row for conference information.
 
@@ -441,7 +464,7 @@ class GenerateDataDict:
             keywords,
         )
 
-    def _process_conference_dates(self, abbr_dict):
+    def _process_conference_dates(self, abbr_dict: dict[str, Any]):
         """Parse and return conference dates."""
         # Parse abstract due date
         abstract_due = None
@@ -458,7 +481,7 @@ class GenerateDataDict:
 
         return abstract_due, start_date, today
 
-    def _format_date_indicators(self, abstract_due, start_date, today):
+    def _format_date_indicators(self, abstract_due, start_date, today) -> tuple[str, str]:
         """Format date indicators for display."""
         abstract_indicator, start_indicator = "", ""
 
@@ -479,22 +502,22 @@ class GenerateDataDict:
 
     def _build_conference_row(
         self,
-        publisher_url,
-        full_name,
-        abbr_name,
-        url_home,
-        url_about,
-        archive_display,
-        period,
-        top,
-        abbr_dict,
+        publisher_url: str,
+        full_name: str,
+        abbr_name: str,
+        url_home: str,
+        url_about: str,
+        archive_display: str,
+        period: str,
+        top: str,
+        abbr_dict: dict[str, Any],
         abstract_due,
-        abstract_indicator,
+        abstract_indicator: str,
         start_date,
-        start_indicator,
-        year_url,
-        keywords,
-    ):
+        start_indicator: str,
+        year_url: str,
+        keywords: list[str],
+    ) -> str:
         """Construct conference table row string."""
         # Format date strings
         abstract_date_str = abstract_due.strftime("%d/%m/%Y") if abstract_due else ""
@@ -522,8 +545,18 @@ class GenerateDataDict:
 
     # Journals
     def _generate_for_journal(
-        self, publisher_url, full_name, abbr_name, url_home, url_about, period, top, keywords, abbr, abbr_dict
-    ):
+        self,
+        publisher_url: str,
+        full_name: str,
+        abbr_name: str,
+        url_home: str,
+        url_about: str,
+        period: str,
+        top: str,
+        keywords: list[str],
+        abbr: str,
+        abbr_dict: dict[str, Any],
+    ) -> str:
         r"""Generate a markdown table row for journal information.
 
         Args:
@@ -551,8 +584,18 @@ class GenerateDataDict:
         )
 
     def _build_journal_row(
-        self, publisher_url, full_name, abbr_name, url_home, url_about, issues_display, period, top, abbr_dict, keywords
-    ):
+        self,
+        publisher_url: str,
+        full_name: str,
+        abbr_name: str,
+        url_home: str,
+        url_about: str,
+        issues_display: str,
+        period: str,
+        top: str,
+        abbr_dict: dict[str, Any],
+        keywords: list[str],
+    ) -> str:
         """Construct journal table row string."""
         return (
             f"|{publisher_url}|"
@@ -569,7 +612,7 @@ class GenerateDataDict:
         )
 
     # Mermaid data
-    def generate_mermaid_data(self, publisher: str, abbr: str, inproceedings_or_article: str):
+    def generate_mermaid_data(self, publisher: str, abbr: str, inproceedings_or_article: str) -> list[str]:
         """Generate Mermaid diagram data from spidered README files.
 
         This method reads spidered data from README files and generates
