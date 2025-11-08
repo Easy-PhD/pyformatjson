@@ -1,6 +1,6 @@
 [project]
 name = "pyformatjson"
-version = "0.2.6"
+version = "0.2.9"
 description = "pyformatjson"
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]

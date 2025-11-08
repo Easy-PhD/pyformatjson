@@ -635,7 +635,7 @@ class GenerateDataDict:
         mermaid, data_dict = [], {}
         # |AAAI|1980|95|Proceedings of the First National Conference on Artificial Intelligence|
         regex = re.compile(r"\|.*\|([0-9]+)\|([0-9]+)\|.*\|")
-        with open(full_readme, encoding="utf-8") as file:
+        with open(full_readme, encoding="utf-8", newline="\n") as file:
             data_list = file.readlines()
         for line in data_list:
             if mch := regex.search(line):

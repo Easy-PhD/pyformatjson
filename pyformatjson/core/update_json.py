@@ -12,7 +12,7 @@ def load_json_data(path_json: str, filename: str) -> dict:
         if not os.path.exists(file_path):
             return {}
 
-        with open(file_path, encoding="utf-8") as file:
+        with open(file_path, encoding="utf-8", newline="\n") as file:
             return json.load(file)
 
     except Exception as e:
@@ -63,7 +63,7 @@ def update_json_file(full_json_cj: str, conferences_or_journals: str) -> dict[st
 
     # Save updated JSON
     if flag and json_dict:
-        with open(full_json_cj, "w", encoding="utf-8") as f:
+        with open(full_json_cj, "w", encoding="utf-8", newline="\n") as f:
             f.write(json.dumps(json_dict, indent=4, sort_keys=True, ensure_ascii=True))
 
     return json_dict
@@ -169,8 +169,7 @@ class CheckAcronymAbbrAndFullDict:
             for i, main_acronym in enumerate(acronyms):
                 # Normalize items: lowercase and remove parentheses
                 main_items = [
-                    item.lower().replace("(", "").replace(")", "")
-                    for item in data[main_acronym].get(key_type, [])
+                    item.lower().replace("(", "").replace(")", "") for item in data[main_acronym].get(key_type, [])
                 ]
 
                 # Create exact match patterns
@@ -179,17 +178,13 @@ class CheckAcronymAbbrAndFullDict:
                 matches_found = []
 
                 # Compare with other acronyms
-                for other_acronym in acronyms[i + 1:]:
+                for other_acronym in acronyms[i + 1 :]:
                     other_items = [
-                        item.lower().replace("(", "").replace(")", "")
-                        for item in data[other_acronym].get(key_type, [])
+                        item.lower().replace("(", "").replace(")", "") for item in data[other_acronym].get(key_type, [])
                     ]
 
                     # Find matching items
-                    matching_items = [
-                        item for item in other_items
-                        if any(pattern.match(item) for pattern in patterns)
-                    ]
+                    matching_items = [item for item in other_items if any(pattern.match(item) for pattern in patterns)]
 
                     if matching_items:
                         matches_found.append([main_acronym, other_acronym, matching_items])

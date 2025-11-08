@@ -8,9 +8,9 @@ from .generate_dict import conference_journal_header
 def create_safe_filename(text: str) -> str:
     """Create a safe filename across all platforms."""
     # Remove or replace invalid characters
-    safe_text = re.sub(r'[<>:"/\\|?*]', '_', text)
+    safe_text = re.sub(r'[<>:"/\\|?*]', "_", text)
     # Remove leading/trailing spaces and dots
-    safe_text = safe_text.strip(' .')
+    safe_text = safe_text.strip(" .")
     # Ensure it's not empty
     return safe_text if safe_text else "unnamed"
 
@@ -135,7 +135,7 @@ class WriteDataToMd:
 
         # Write to file
         output_file = os.path.join(self.path_output, f"Introductions_{self.cj.title()}.md")
-        with open(output_file, "w", encoding="utf-8") as f:
+        with open(output_file, "w", encoding="utf-8", newline="\n") as f:
             f.writelines(data_list)
 
     # --------- --------- --------- --------- --------- --------- --------- --------- --------- #
@@ -208,7 +208,10 @@ class WriteDataToMd:
         # Write to file
         category_postfix = f"_{keywords_category_name.title()}" if keywords_category_name else ""
         with open(
-            os.path.join(self.path_output, f"Categories_{self.cj.title()}{category_postfix}.md"), "w", encoding="utf-8"
+            os.path.join(self.path_output, f"Categories_{self.cj.title()}{category_postfix}.md"),
+            "w",
+            encoding="utf-8",
+            newline="\n",
         ) as f:
             f.writelines(data_list)
 
@@ -249,7 +252,7 @@ class WriteDataToMd:
             path_key = standardize_path(os.path.join(self.path_output, f"Categories_{self.cj.title()}"))
             # Create safe filename by replacing invalid characters
             safe_keyword = create_safe_filename(keyword).replace(" ", "_")
-            with open(os.path.join(path_key, f"{safe_keyword}.md"), "w", encoding="utf-8") as f:
+            with open(os.path.join(path_key, f"{safe_keyword}.md"), "w", encoding="utf-8", newline="\n") as f:
                 f.writelines(data_list)
 
         return None
@@ -295,7 +298,9 @@ class WriteDataToMd:
             idx += 1
 
         # Write to file
-        with open(os.path.join(self.path_output, f"Publishers_{self.cj.title()}.md"), "w", encoding="utf-8") as f:
+        with open(
+            os.path.join(self.path_output, f"Publishers_{self.cj.title()}.md"), "w", encoding="utf-8", newline="\n"
+        ) as f:
             f.writelines(data_list_pub)
         return None
 
@@ -359,7 +364,7 @@ class WriteDataToMd:
 
             # Write publisher-specific file
             path_pub = standardize_path(os.path.join(self.path_output, f"Publishers_{self.cj.title()}"))
-            with open(os.path.join(path_pub, f"{pub}.md"), "w", encoding="utf-8") as f:
+            with open(os.path.join(path_pub, f"{pub}.md"), "w", encoding="utf-8", newline="\n") as f:
                 f.writelines(data_list)
 
         return None
@@ -403,7 +408,10 @@ class WriteDataToMd:
         # Write to file
         category_postfix = f"_{keywords_category_name.title()}" if keywords_category_name else ""
         with open(
-            os.path.join(self.path_output, f"Statistics_{self.cj.title()}{category_postfix}.md"), "w", encoding="utf-8"
+            os.path.join(self.path_output, f"Statistics_{self.cj.title()}{category_postfix}.md"),
+            "w",
+            encoding="utf-8",
+            newline="\n",
         ) as f:
             f.writelines(data_list)
         return None
@@ -449,7 +457,7 @@ class WriteDataToMd:
             path_pub = standardize_path(os.path.join(self.path_output, f"Statistics_{self.cj.title()}"))
             # Create safe filename by replacing invalid characters
             safe_keyword = create_safe_filename(keyword).replace(" ", "_")
-            with open(os.path.join(path_pub, f"{safe_keyword}.md"), "w", encoding="utf-8") as f:
+            with open(os.path.join(path_pub, f"{safe_keyword}.md"), "w", encoding="utf-8", newline="\n") as f:
                 f.writelines(data_list)
 
         return None
