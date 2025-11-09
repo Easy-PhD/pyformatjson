@@ -35,13 +35,14 @@ class DocGenerator:
     def get_module_info(self, module_path: Path) -> dict[str, Any]:
         # Calculate relative import path
         relative_path = module_path.relative_to(self.source_dir)
-        module_name = str(relative_path).replace("/", ".").replace("\\", ".").replace(".py", "")
+        module_name = str(relative_path).replace("/", ".").replace("\\", ".")
+        module_name = module_name[:-3]  # replace(".py", "")
 
         return {
             "path": module_path,
             "name": module_name,
             "import_path": f"{self.package_name}.{module_name}",
-            "doc_path": self.api_dir / f"{module_name}.md",
+            "doc_path": self.api_dir / f"{module_name}.md"
         }
 
     def generate_module_doc(self, module_info: dict[str, Any]) -> str:
