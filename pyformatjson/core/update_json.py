@@ -63,8 +63,41 @@ def update_json_file(full_json_cj: str, conferences_or_journals: str) -> dict[st
 
     # Save updated JSON
     if flag and json_dict:
+        json_dict = add_multiple_add(json_dict, conferences_or_journals)
+
         with open(full_json_cj, "w", encoding="utf-8", newline="\n") as f:
             f.write(json.dumps(json_dict, indent=4, sort_keys=True, ensure_ascii=True))
+
+    return json_dict
+
+
+def add_multiple_add(json_dict, conferences_or_journals):
+    for pub in json_dict:
+        for key in json_dict[pub][conferences_or_journals]:
+            names_abbr = json_dict[pub][conferences_or_journals][key].get("names_abbr", [])
+            names_full = json_dict[pub][conferences_or_journals][key].get("names_full", [])
+
+            names_abbr_, names_full_ = [], []
+            for abbr, full in zip(names_abbr, names_full, strict=True):
+                names_abbr_.append(abbr)
+                names_full_.append(full)
+
+                full = full.encode('unicode_escape').decode()
+                if "&" in full and r"\\&" not in full and r"\\\\&" not in full:
+                    full_1 = re.sub("&", r"\\&", full)
+                    full_2 = re.sub("&", r"\\\\&", full)
+                    if full_1 not in names_full:
+                        breakpoint()
+                        names_abbr_.append(abbr)
+                        names_full_.append(full_1)
+
+                    if full_2 not in names_full:
+                        breakpoint()
+                        names_abbr_.append(abbr)
+                        names_full_.append(full_2)
+
+            json_dict[pub][conferences_or_journals][key]["names_abbr"] = names_abbr_
+            json_dict[pub][conferences_or_journals][key]["names_full"] = names_full_
 
     return json_dict
 
