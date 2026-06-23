@@ -1,6 +1,6 @@
 [project]
 name = "pyformatjson"
-version = "0.2.9"
+version = "0.3.0"
 description = "pyformatjson"
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
@@ -28,7 +28,7 @@ dependencies = [
     "lxml>=6.0.2",
     "playwright>=1.55.0",
     "psutil>=7.1.2",
-    "pyadvtools>=0.3.8",
+    "pyadvtools>=0.3.10",
     "requests>=2.32.5",
     "selenium>=4.38.0",
 ]
