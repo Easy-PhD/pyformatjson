@@ -495,13 +495,13 @@ class GenerateDataDict:
             # Vue.js template format
             if (abstract_due is not None) and (abstract_due != "TBD"):
                 abstract_indicator = f"**{{{{ diffDate('{abstract_due}') }}}}**"
-            if (start_date is not None) and (abstract_due != "TBD"):
+            if (start_date is not None) and (start_date != "TBD"):
                 start_indicator = f"**{{{{ diffDate('{start_date}') }}}}**"
         else:
             # Standard day count format
             if (abstract_due is not None) and (abstract_due != "TBD"):
                 abstract_indicator = (abstract_due - today).days if today <= abstract_due else "Expired"
-            if (start_date is not None) and (abstract_due != "TBD"):
+            if (start_date is not None) and (start_date != "TBD"):
                 start_indicator = (start_date - today).days if today <= start_date else "Expired"
 
         return abstract_indicator, start_indicator
