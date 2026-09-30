@@ -469,12 +469,18 @@ class GenerateDataDict:
         # Parse abstract due date
         abstract_due = None
         if due_str := abbr_dict.get("conf_abstract_due", "").strip():
-            abstract_due = datetime.strptime(due_str, "%d/%m/%Y").date()
+            if due_str.upper() == "TBD":
+                abstract_due = "TBD"
+            else:
+                abstract_due = datetime.strptime(due_str, "%d/%m/%Y").date()
 
         # Parse conference start date
         start_date = None
         if start_str := abbr_dict.get("conf_date_start", "").strip():
-            start_date = datetime.strptime(start_str, "%d/%m/%Y").date()
+            if start_str.upper() == "TBD":
+                start_date = "TBD"
+            else:
+                start_date = datetime.strptime(start_str, "%d/%m/%Y").date()
 
         # Get today's date
         today = datetime.strptime(datetime.now().strftime("%d/%m/%Y"), "%d/%m/%Y").date()
@@ -487,15 +493,15 @@ class GenerateDataDict:
 
         if self.for_vue:
             # Vue.js template format
-            if abstract_due:
+            if (abstract_due is not None) and (abstract_due != "TBD"):
                 abstract_indicator = f"**{{{{ diffDate('{abstract_due}') }}}}**"
-            if start_date:
+            if (start_date is not None) and (abstract_due != "TBD"):
                 start_indicator = f"**{{{{ diffDate('{start_date}') }}}}**"
         else:
             # Standard day count format
-            if abstract_due:
+            if (abstract_due is not None) and (abstract_due != "TBD"):
                 abstract_indicator = (abstract_due - today).days if today <= abstract_due else "Expired"
-            if start_date:
+            if (start_date is not None) and (abstract_due != "TBD"):
                 start_indicator = (start_date - today).days if today <= start_date else "Expired"
 
         return abstract_indicator, start_indicator
@@ -520,8 +526,21 @@ class GenerateDataDict:
     ) -> str:
         """Construct conference table row string."""
         # Format date strings
-        abstract_date_str = abstract_due.strftime("%d/%m/%Y") if abstract_due else ""
-        start_date_str = start_date.strftime("%d/%m/%Y") if start_date else ""
+        if abstract_due is None:
+            abstract_date_str = ""
+        else:
+            if abstract_due == "TBD":
+                abstract_date_str = "TBD"
+            else:
+                abstract_date_str = abstract_due.strftime("%d/%m/%Y")
+
+        if start_date is None:
+            start_date_str = ""
+        else:
+            if start_date == "TBD":
+                start_date_str = "TBD"
+            else:
+                start_date_str = start_date.strftime("%d/%m/%Y")
 
         # Format start date with link if available
         start_date_display = self._format_link(start_date_str, year_url) if start_date_str else ""
