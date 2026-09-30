@@ -437,7 +437,7 @@ class GenerateDataDict:
         archive_display = self._format_link(abbr, archive_url)
 
         # Process conference dates
-        abstract_due, start_date, today = self._process_conference_dates(abbr_dict)
+        abstract_due, abstract_due_flag, start_date, start_date_flag, today = self._process_conference_dates(abbr_dict)
 
         # Format date indicators for Vue or standard display
         abstract_indicator, start_indicator = self._format_date_indicators(abstract_due, start_date, today)
@@ -457,8 +457,10 @@ class GenerateDataDict:
             top,
             abbr_dict,
             abstract_due,
+            abstract_due_flag,
             abstract_indicator,
             start_date,
+            start_date_flag,
             start_indicator,
             year_url,
             keywords,
@@ -468,6 +470,9 @@ class GenerateDataDict:
         """Parse and return conference dates."""
         # Parse abstract due date
         abstract_due = None
+        abstract_due_flag = abbr_dict.get("conf_abstract_due_flag", "").strip()
+        if abstract_due_flag:
+            abstract_due_flag = f" {abstract_due_flag}"
         if due_str := abbr_dict.get("conf_abstract_due", "").strip():
             if due_str.upper() == "TBD":
                 abstract_due = "TBD"
@@ -476,6 +481,9 @@ class GenerateDataDict:
 
         # Parse conference start date
         start_date = None
+        start_date_flag = abbr_dict.get("conf_date_start_flag", "").strip()
+        if start_date_flag:
+            start_date_flag = f" {start_date_flag}"
         if start_str := abbr_dict.get("conf_date_start", "").strip():
             if start_str.upper() == "TBD":
                 start_date = "TBD"
@@ -485,7 +493,7 @@ class GenerateDataDict:
         # Get today's date
         today = datetime.strptime(datetime.now().strftime("%d/%m/%Y"), "%d/%m/%Y").date()
 
-        return abstract_due, start_date, today
+        return abstract_due, abstract_due_flag, start_date, start_date_flag, today
 
     def _format_date_indicators(self, abstract_due, start_date, today) -> tuple[str, str]:
         """Format date indicators for display."""
@@ -500,9 +508,15 @@ class GenerateDataDict:
         else:
             # Standard day count format
             if (abstract_due is not None) and (abstract_due != "TBD"):
-                abstract_indicator = (abstract_due - today).days if today <= abstract_due else "Expired"
+                if today <= abstract_due:
+                    abstract_indicator = f"{(abstract_due - today).days}"
+                else:
+                    abstract_indicator = "Expired"
             if (start_date is not None) and (start_date != "TBD"):
-                start_indicator = (start_date - today).days if today <= start_date else "Expired"
+                if today <= start_date:
+                    start_indicator = f"{(start_date - today).days}"
+                else:
+                    start_indicator = "Expired"
 
         return abstract_indicator, start_indicator
 
@@ -518,8 +532,10 @@ class GenerateDataDict:
         top: str,
         abbr_dict: dict[str, Any],
         abstract_due,
+        abstract_due_flag: str,
         abstract_indicator: str,
         start_date,
+        start_date_flag: str,
         start_indicator: str,
         year_url: str,
         keywords: list[str],
@@ -554,9 +570,9 @@ class GenerateDataDict:
             f"{period}|"
             f"{top}|"
             f"{abbr_dict.get('score_ccf', '')}|"
-            f"{abstract_date_str}|"
+            f"{abstract_date_str}{abstract_due_flag}|"
             f"{abstract_indicator}|"
-            f"{start_date_display}|"
+            f"{start_date_display}{start_date_flag}|"
             f"{start_indicator}|"
             f"{abbr_dict.get('conf_location', '').strip()}|"
             f"{'; '.join(keywords)}|"
