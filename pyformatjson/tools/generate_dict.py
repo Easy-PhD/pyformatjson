@@ -24,7 +24,7 @@ def conference_journal_header() -> tuple[list[str], list[str]]:
     t = "|-         |-            |-         |"
     conference_header = [
         f"{o}Acronym/Archive|Period/DBLP|Top|CCF|Submission|Days Left|Main Conf.|Days Left|Location|Keywords/Google|\n",
-        f"{t}-              |-          |-  |-  |-         |-        |          |-        |-       |-              |\n",
+        f"{t}-              |-          |-  |-  |-         |-        |-         |-        |-       |-              |\n",
     ]
     journal_header = [
         f"{o}Acronym/Issues|Period/DBLP|Top/Early|CCF|CAS|JCR|IF|Keywords/Google|\n",
